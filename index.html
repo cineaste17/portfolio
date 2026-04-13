@@ -475,9 +475,15 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
 .g-mobile-link:last-child{border-bottom:none;}
 .g-mobile-link:active{color:var(--mid);transform:scale(.97);}
 .g-mobile-link{transition:color .15s,transform .12s cubic-bezier(.16,1,.3,1);}
-/* mobile save btn inside nav */
-.g-mobile-save{font-family:var(--font-mono);font-size:9px;letter-spacing:.25em;text-transform:uppercase;color:var(--soft);margin-top:32px;cursor:pointer;border:1px solid var(--border);padding:8px 20px;transition:all .15s;}
-.g-mobile-save:active{border-color:var(--fg);color:var(--fg);}
+/* mobile nav bottom actions row */
+.g-mobile-actions{display:flex;align-items:center;gap:12px;margin-top:36px;}
+.g-mobile-save,.g-mobile-action-edit{
+  font-family:var(--font-mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--soft);cursor:pointer;border:1px solid var(--border);padding:9px 18px;
+  transition:all .2s;
+}
+.g-mobile-save:active,.g-mobile-action-edit:active{border-color:var(--fg);color:var(--fg);}
+.g-mobile-action-edit:empty{display:none;}
 
 /* Work page mobile info bar */
 #pf-mobile-bar{
@@ -555,14 +561,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
   .crop-stage{ height:min(280px,62vw); }
   .crop-hint-txt{ display:none; }
 
-  /* ── Mobile edit slot — subtle, right-aligned ── */
-  #g-mobile-edit{ display:flex;align-items:center;margin-right:4px; }
-  #g-mobile-edit .btn-sm{
-    font-size:7px;padding:4px 9px;
-    border-color:transparent;color:var(--soft);
-    letter-spacing:.18em;
-  }
-  #g-mobile-edit .btn-sm:active{ color:var(--fg);border-color:var(--border); }
+  /* (mobile edit moved into nav menu) */
 
   /* ── Edit panel — mobile stacked layout ── */
   .ep-topbar{ padding:0 16px; }
@@ -666,7 +665,6 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
     <button class="btn-sm" id="expEditToggle" style="display:none">Edit Page</button>
     <button class="btn-sm" id="saveFileBtn" title="Export as standalone HTML file">↓ Save File</button>
   </div>
-  <div id="g-mobile-edit"></div>
   <div id="g-hamburger" onclick="toggleMobileNav()" aria-label="Menu">
     <span></span><span></span><span></span>
   </div>
@@ -675,7 +673,10 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
   <div class="g-mobile-link" onclick="goScreen('s-about');closeMobileNav()">About</div>
   <div class="g-mobile-link" onclick="goScreen('s-portfolio');closeMobileNav()">Work</div>
   <div class="g-mobile-link" onclick="goScreen('s-experience');closeMobileNav()">Experience</div>
-  <div class="g-mobile-save" id="mobileSaveBtn">↓ Save File</div>
+  <div class="g-mobile-actions">
+    <div class="g-mobile-action-edit" id="mobileEditBtn" onclick="closeMobileNav()"></div>
+    <div class="g-mobile-save" id="mobileSaveBtn">↓ Save</div>
+  </div>
 </div>
 
 <div id="s-landing" class="screen">
@@ -919,13 +920,19 @@ function goScreen(id){
   document.getElementById('abEditToggle').style.display = id==='s-about' ? '' : 'none';
   document.getElementById('openEditBtn').style.display  = id==='s-portfolio'  ? '' : 'none';
   document.getElementById('expEditToggle').style.display = id==='s-experience'  ? '' : 'none';
-  // Mobile edit slot
-  const mEdit=document.getElementById('g-mobile-edit');
-  if(mEdit){
-    if(id==='s-about') mEdit.innerHTML='<button class="btn-sm" onclick="abEnterEdit()">Edit</button>';
-    else if(id==='s-portfolio') mEdit.innerHTML='<button class="btn-sm" onclick="document.getElementById(\'editPanel\').classList.add(\'open\');renderList()">Edit</button>';
-    else if(id==='s-experience') mEdit.innerHTML='<button class="btn-sm" onclick="expEnterEdit()">Edit</button>';
-    else mEdit.innerHTML='';
+  // Mobile edit button in nav menu
+  const mBtn=document.getElementById('mobileEditBtn');
+  if(mBtn){
+    if(id==='s-about') mBtn.textContent='Edit About';
+    else if(id==='s-portfolio') mBtn.textContent='Edit Projects';
+    else if(id==='s-experience') mBtn.textContent='Edit Experience';
+    else mBtn.textContent='';
+    mBtn.onclick=()=>{
+      closeMobileNav();
+      if(id==='s-about') abEnterEdit();
+      else if(id==='s-portfolio'){document.getElementById('editPanel').classList.add('open');renderList();}
+      else if(id==='s-experience') expEnterEdit();
+    };
   }
 
   if(id==='s-portfolio') rebuildAll();
@@ -2073,55 +2080,94 @@ goScreen = function(id) {
 /* ══════════════════════════════════
    SAVE / EXPORT
 ══════════════════════════════════ */
-function exportPortfolio() {
-  // 1. Collect all localStorage data
+function buildPortfolioHTML() {
   const KEYS = ['pf_about_v1', 'pf_v3', 'pf_exp_v1', 'pf_font_v1'];
   const stored = {};
   KEYS.forEach(k => { const v = localStorage.getItem(k); if(v !== null) stored[k] = v; });
-
-  // 2. Data-restore script injected into <head> — runs before anything else
   const dataScript =
     `<script id="_pf_data">(function(){try{` +
     `var d=${JSON.stringify(stored)};` +
     `Object.keys(d).forEach(function(k){localStorage.setItem(k,d[k]);});` +
     `}catch(e){}})();<\/script>`;
-
-  // 3. Get live HTML
   let html = document.documentElement.outerHTML;
-
-  // 4. Clean up live-state artefacts ──────────────────────────────
-  // Remove previously baked-in data script
   html = html.replace(/<script id="_pf_data">[\s\S]*?<\/script>/g, '');
-  // Strip screen active/visible classes so export opens on landing
   html = html.replace(/class="screen[^"]*active[^"]*"/g, 'class="screen"');
-  // Hide topbar (show class added by goScreen, not wanted on cold load)
   html = html.replace(/(<div id="g-topbar")[^>]*>/g, '$1>');
-  // Remove fontBtn/fontPanel (buildFontPicker re-creates them on load)
   html = html.replace(/<button id="fontBtn"[\s\S]*?<\/button>/g, '');
   html = html.replace(/<div id="fontPanel"[\s\S]*?<\/div>/g, '');
-  // Clear dynamic containers so they don't show stale content before JS rebuilds them
   html = html.replace(/(<div class="drum" id="drum">)[\s\S]*?(<\/div>)/, '$1$2');
   html = html.replace(/(<div class="ep-list" id="epList">)[\s\S]*?(<\/div>)/, '$1$2');
   html = html.replace(/(<div id="exp-intern-list">)[\s\S]*?(<\/div>)/, '$1$2');
   html = html.replace(/(<div id="exp-campus-list">)[\s\S]*?(<\/div>)/, '$1$2');
   html = html.replace(/(<div class="pf-dots" id="dots">)[\s\S]*?(<\/div>)/, '$1$2');
-
-  // 5. Inject data-restore script right after <meta charset>
   html = html.replace(/(<meta charset="UTF-8">)/, '$1\n' + dataScript);
+  return '<!DOCTYPE html>\n' + html;
+}
 
-  // 6. Prepend DOCTYPE and download
-  html = '<!DOCTYPE html>\n' + html;
+function exportPortfolio() {
+  const html = buildPortfolioHTML();
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
-  a.href     = url;
-  a.download = 'portfolio.html';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  a.href = url; a.download = 'portfolio.html';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
   toast('Saved as portfolio.html ↓');
 }
+
+// ── Auto-publish to GitHub Pages after every save ──
+const GH_REPO = 'cineaste17/portfolio';
+const GH_FILE = 'index.html';
+let _ghPublishing = false;
+
+async function publishToGitHub() {
+  if(_ghPublishing) return;
+  let token = localStorage.getItem('pf_gh_token');
+  if(!token) {
+    token = prompt('GitHub Personal Access Token (stored locally, never uploaded):');
+    if(!token) return;
+    localStorage.setItem('pf_gh_token', token);
+  }
+  _ghPublishing = true;
+  toast('Publishing…');
+  try {
+    const api = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`;
+    const headers = { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' };
+    const shaRes = await fetch(api, { headers });
+    if(!shaRes.ok) throw new Error('fetch sha failed: ' + shaRes.status);
+    const { sha } = await shaRes.json();
+    const html = buildPortfolioHTML();
+    // btoa doesn't handle unicode — use TextEncoder → base64
+    const bytes = new TextEncoder().encode(html);
+    let binary = '';
+    bytes.forEach(b => binary += String.fromCharCode(b));
+    const content = btoa(binary);
+    const putRes = await fetch(api, {
+      method: 'PUT', headers,
+      body: JSON.stringify({ message: 'portfolio: update content', content, sha })
+    });
+    if(!putRes.ok) throw new Error('push failed: ' + putRes.status);
+    toast('Published ↑ live in ~1 min');
+  } catch(e) {
+    console.error(e);
+    if(e.message.includes('401') || e.message.includes('403')) {
+      localStorage.removeItem('pf_gh_token');
+      toast('Token invalid — enter again');
+    } else {
+      toast('Publish failed');
+    }
+  } finally {
+    _ghPublishing = false;
+  }
+}
+
+// Hook all save actions to also publish
+const _origAbSave = abSave;
+abSave = async function() { await _origAbSave.apply(this, arguments); publishToGitHub(); };
+const _origExpSave = expSave;
+expSave = function() { _origExpSave.apply(this, arguments); publishToGitHub(); };
+const _origSaveProjects = saveProjects;
+saveProjects = function() { _origSaveProjects.apply(this, arguments); publishToGitHub(); };
 
 document.getElementById('saveFileBtn').addEventListener('click', exportPortfolio);
 
