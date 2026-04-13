@@ -780,8 +780,6 @@ async function saveAboutResilient(){
   if(abData.photoSrc&&abData.photoSrc.startsWith('data:')&&abData.photoSrc.length>2000000){
     try{
       const r=await compressAboutPhotoDataUrl(abData.photoSrc,1920,0.85);
-      abData.photoPanX=(abData.photoPanX||0)*r.scale;
-      abData.photoPanY=(abData.photoPanY||0)*r.scale;
       abData.photoSrc=r.url;
       const imel=document.getElementById('abPhotoImg');
       imel.onload=()=>{clampAboutPhotoPan();layoutAboutPhoto();};
@@ -797,8 +795,6 @@ async function saveAboutResilient(){
         return false;
       try{
         const r=await compressAboutPhotoDataUrl(abData.photoSrc,maxSide,q);
-        abData.photoPanX=(abData.photoPanX||0)*r.scale;
-        abData.photoPanY=(abData.photoPanY||0)*r.scale;
         abData.photoSrc=r.url;
         const imel=document.getElementById('abPhotoImg');
         imel.onload=()=>{clampAboutPhotoPan();layoutAboutPhoto();};
