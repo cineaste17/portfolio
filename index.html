@@ -1070,7 +1070,20 @@ document.getElementById('abPhotoReset').addEventListener('click',e=>{
   const wrap=document.getElementById('abPhotoWrap');
   const shield=document.getElementById('abPhotoDragShield');
   let drag=false,sx,sy,ox,oy;
-  function endDrag(){drag=false;}
+  let abAutoSaveT;
+  function abAutoSave(){
+    clearTimeout(abAutoSaveT);
+    abAutoSaveT=setTimeout(async()=>{
+      if(!abData.photoSrc)return;
+      clampAboutPhotoPan();
+      abData.photoZoom=abData.photoZoom||1;
+      abData.photoPanX=abData.photoPanX||0;
+      abData.photoPanY=abData.photoPanY||0;
+      abData.frameX=abData.frameX||0;
+      await saveAboutResilient();
+    },600);
+  }
+  function endDrag(){drag=false;abAutoSave();}
   shield.addEventListener('pointerdown',e=>{
     if(!abEditing||!abData.photoSrc)return;
     e.preventDefault();
@@ -1096,6 +1109,7 @@ document.getElementById('abPhotoReset').addEventListener('click',e=>{
     z=Math.max(1,Math.min(4,z));
     abData.photoZoom=z;
     layoutAboutPhoto();
+    abAutoSave();
   },{passive:false});
   if(typeof ResizeObserver!=='undefined'){
     new ResizeObserver(()=>layoutAboutPhoto()).observe(wrap);
