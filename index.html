@@ -560,10 +560,10 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
 ════════════════════════════ */
 #cursor-glow{
   position:fixed;pointer-events:none;z-index:9999;
-  width:320px;height:320px;border-radius:50%;
-  background:radial-gradient(circle,rgba(0,0,0,.045) 0%,transparent 70%);
+  width:480px;height:480px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,0,0,.11) 0%,rgba(0,0,0,.055) 28%,transparent 68%);
   transform:translate(-50%,-50%);
-  transition:opacity .4s;
+  transition:opacity .5s;
   mix-blend-mode:multiply;
 }
 
@@ -1579,6 +1579,20 @@ document.addEventListener('keydown',e=>{
   if(e.key==='ArrowLeft')lbGo(-1);
   if(e.key==='ArrowRight')lbGo(1);
 });
+// Lightbox touch swipe
+{
+  const lb=document.getElementById('lightbox');
+  let lbTX=0,lbTT=0;
+  lb.addEventListener('touchstart',e=>{lbTX=e.touches[0].clientX;lbTT=Date.now();},{passive:true});
+  lb.addEventListener('touchend',e=>{
+    const dx=lbTX-e.changedTouches[0].clientX;
+    const vel=Math.abs(dx)/(Date.now()-lbTT||1);
+    if(Math.abs(dx)>40||vel>0.3){
+      const media=projects[lbPI]&&projects[lbPI].media||[];
+      if(media.length>1) lbGo(dx>0?1:-1);
+    }
+  });
+}
 
 /* ── PROJECT EDITOR ── */
 function openEditor(){document.getElementById('editPanel').classList.add('open');renderList();editIdx=-1;showEmpty();}
@@ -1872,14 +1886,20 @@ renderExp();
    INTERACTIONS
 ══════════════════════════════════ */
 
-// ── 1. Cursor glow ──
+// ── 1. Cursor glow (lerp trailing) ──
 const glowEl = document.getElementById('cursor-glow');
-document.addEventListener('mousemove', e => {
-  glowEl.style.left = e.clientX + 'px';
-  glowEl.style.top  = e.clientY + 'px';
-});
-document.addEventListener('mouseenter', () => { glowEl.style.opacity = '1'; });
-document.addEventListener('mouseleave', () => { glowEl.style.opacity = '0'; });
+let _mx = window.innerWidth/2, _my = window.innerHeight/2;
+let _gx = _mx, _gy = _my, _glowVisible = false;
+document.addEventListener('mousemove', e => { _mx = e.clientX; _my = e.clientY; });
+document.addEventListener('mouseenter', () => { _glowVisible=true; glowEl.style.opacity='1'; });
+document.addEventListener('mouseleave', () => { _glowVisible=false; glowEl.style.opacity='0'; });
+(function glowLoop(){
+  _gx += (_mx - _gx) * 0.1;
+  _gy += (_my - _gy) * 0.1;
+  glowEl.style.left = _gx + 'px';
+  glowEl.style.top  = _gy + 'px';
+  requestAnimationFrame(glowLoop);
+})();
 
 // ── 2. Magnetic nav links ──
 document.querySelectorAll('#g-nav a').forEach(link => {
