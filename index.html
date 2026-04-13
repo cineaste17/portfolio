@@ -707,6 +707,7 @@ function goScreen(id){
   document.getElementById('expEditToggle').style.display = id==='s-experience'  ? '' : 'none';
 
   if(id==='s-portfolio') rebuildAll();
+  if(id==='s-about') requestAnimationFrame(()=>layoutAboutPhoto());
 }
 
 // Landing click
@@ -944,6 +945,7 @@ function layoutAboutPhoto(){
   const img=document.getElementById('abPhotoImg');
   if(!abData.photoSrc||img.style.display==='none')return;
   const W=wrap.clientWidth,H=wrap.clientHeight;
+  if(!W||!H)return;  // screen is hidden — skip to avoid clobbering saved pan with zeros
   const iw=img.naturalWidth,ih=img.naturalHeight;
   if(!iw||!ih)return;
   let z=abData.photoZoom;if(typeof z!=='number'||z<1)z=1;if(z>4)z=4;
