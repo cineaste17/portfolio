@@ -270,7 +270,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
 .info-num::before{content:'';display:block;width:20px;height:1px;background:var(--border);}
 .info-cat{font-family:var(--font-mono);font-size:8px;letter-spacing:.38em;color:var(--soft);text-transform:uppercase;margin-bottom:8px;}
 .info-title{font-size:19px;font-weight:600;letter-spacing:-.03em;line-height:1.2;color:var(--fg);margin-bottom:12px;}
-.info-desc{font-size:11px;line-height:1.9;color:var(--mid);font-weight:300;margin-bottom:18px;}
+.info-desc{font-size:11px;line-height:1.9;color:var(--mid);font-weight:300;margin-bottom:18px;white-space:pre-wrap;}
 .info-meta{margin-bottom:18px;}
 .meta-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--faint);}
 .meta-k{font-family:var(--font-mono);font-size:8px;letter-spacing:.2em;color:var(--soft);text-transform:uppercase;}
@@ -840,11 +840,11 @@ function renderAbout(){
 }
 function setEditable(id,val){
   const el=document.getElementById(id);
-  if(el)el.textContent=val;
+  if(el)el.innerText=val||'';
 }
 function getEditable(id){
   const el=document.getElementById(id);
-  return el?el.textContent.trim():'';
+  return el?el.innerText.trim():'';
 }
 
 function abEnterEdit(){
@@ -1279,7 +1279,7 @@ function updateInfo(){
     document.getElementById('infoNum').textContent=`${String(current+1).padStart(3,'0')} / ${String(n).padStart(3,'0')}`;
     document.getElementById('infoCat').textContent=p.category||'';
     document.getElementById('infoTitle').textContent=p.title||'';
-    document.getElementById('infoDesc').textContent=p.desc||'';
+    document.getElementById('infoDesc').innerText=p.desc||'';
     document.getElementById('metaYear').textContent=p.year||'—';
     document.getElementById('metaRole').textContent=p.role||'—';
     document.getElementById('infoTags').innerHTML=(p.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
@@ -1591,12 +1591,12 @@ function renderExpSection(key, listId) {
     row.dataset.idx = idx;
     row.innerHTML = `
       <div class="exp-row-left">
-        <div class="exp-period exp-editable" data-field="period" data-key="${key}" data-idx="${idx}" spellcheck="false">${item.period}</div>
+        <div class="exp-period exp-editable" data-field="period" data-key="${key}" data-idx="${idx}" spellcheck="false">${(item.period||'').replace(/\n/g,'<br>')}</div>
       </div>
       <div class="exp-row-right">
-        <div class="exp-role exp-editable" data-field="role" data-key="${key}" data-idx="${idx}" spellcheck="false">${item.role}</div>
-        <div class="exp-org exp-editable" data-field="org" data-key="${key}" data-idx="${idx}" spellcheck="false">${item.org}</div>
-        <div class="exp-desc exp-editable" data-field="desc" data-key="${key}" data-idx="${idx}" spellcheck="false">${item.desc}</div>
+        <div class="exp-role exp-editable" data-field="role" data-key="${key}" data-idx="${idx}" spellcheck="false">${(item.role||'').replace(/\n/g,'<br>')}</div>
+        <div class="exp-org exp-editable" data-field="org" data-key="${key}" data-idx="${idx}" spellcheck="false">${(item.org||'').replace(/\n/g,'<br>')}</div>
+        <div class="exp-desc exp-editable" data-field="desc" data-key="${key}" data-idx="${idx}" spellcheck="false">${(item.desc||'').replace(/\n/g,'<br>')}</div>
         <button class="exp-del-btn" data-key="${key}" data-idx="${idx}" style="display:none">Delete</button>
       </div>
     `;
@@ -1631,7 +1631,7 @@ function expSave() {
   document.querySelectorAll('.exp-editable').forEach(el => {
     const key = el.dataset.key, idx = parseInt(el.dataset.idx), field = el.dataset.field;
     if(key && expData[key] && expData[key][idx] !== undefined) {
-      expData[key][idx][field] = el.textContent.trim();
+      expData[key][idx][field] = el.innerText.trim();
     }
   });
   saveExp();
