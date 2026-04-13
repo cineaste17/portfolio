@@ -287,7 +287,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
 .pf-stage{flex:1;height:100%;display:flex;align-items:center;justify-content:center;perspective:1200px;overflow:hidden;cursor:ns-resize;position:relative;}
 .drum{position:relative;width:100%;height:100%;transform-style:preserve-3d;display:flex;align-items:center;justify-content:center;}
 .card{position:absolute;width:min(480px,65vw);height:min(320px,42vw);transition:all .7s cubic-bezier(.16,1,.3,1);cursor:pointer;}
-.card-inner{width:100%;height:100%;background:var(--faint);border:1px solid var(--border);position:relative;overflow:hidden;transition:border-color .4s;}
+.card-inner{width:100%;height:100%;background:var(--faint);border:1px solid var(--border);position:relative;overflow:hidden;transition:border-color .4s,transform .35s cubic-bezier(.16,1,.3,1);transform-style:preserve-3d;}
 .card.active .card-inner{border-color:var(--fg);}
 .card.active{cursor:zoom-in;}
 .card-media{position:absolute;inset:0;}
@@ -551,10 +551,51 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
   /* ── Mobile edit slot (between logo and hamburger) ── */
   #g-mobile-edit{ display:flex;align-items:center; }
   #g-mobile-edit .btn-sm{ font-size:8px;padding:5px 10px; }
+  /* disable glow on touch */
+  #cursor-glow{ display:none!important; }
+}
+
+/* ════════════════════════════
+   CURSOR GLOW
+════════════════════════════ */
+#cursor-glow{
+  position:fixed;pointer-events:none;z-index:9999;
+  width:320px;height:320px;border-radius:50%;
+  background:radial-gradient(circle,rgba(0,0,0,.045) 0%,transparent 70%);
+  transform:translate(-50%,-50%);
+  transition:opacity .4s;
+  mix-blend-mode:multiply;
+}
+
+/* ════════════════════════════
+   ABOUT ENTRANCE ANIMATIONS
+════════════════════════════ */
+.ab-enter-item{
+  opacity:0;transform:translateY(18px);
+  transition:opacity .65s cubic-bezier(.16,1,.3,1), transform .65s cubic-bezier(.16,1,.3,1);
+}
+.ab-enter-item.visible{opacity:1;transform:translateY(0);}
+
+/* ════════════════════════════
+   EXPERIENCE ROW ENTRANCE
+════════════════════════════ */
+.exp-row{
+  opacity:0;transform:translateY(14px);
+  transition:opacity .5s cubic-bezier(.16,1,.3,1),transform .5s cubic-bezier(.16,1,.3,1);
+}
+.exp-row.exp-visible{opacity:1;transform:translateY(0);}
+
+/* ════════════════════════════
+   CARD 3D TILT
+════════════════════════════ */
+.card{
+  transform-style:preserve-3d;
+  will-change:transform;
 }
 </style>
 </head>
 <body>
+<div id="cursor-glow"></div>
 
 <div id="g-topbar">
   <div id="g-logo" onclick="goScreen('s-landing')">Portfolio</div>
@@ -610,28 +651,28 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
     </div>
 
     <div class="ab-text-col" id="abTextCol">
-      <div class="ab-field" id="fieldName">
+      <div class="ab-field ab-enter-item" id="fieldName">
         <div class="ab-field-hint">Name</div>
         <span class="ab-name ab-editable" id="abName" spellcheck="false">Your Name</span>
       </div>
-      <div class="ab-field" id="fieldRole" style="margin-bottom:24px">
+      <div class="ab-field ab-enter-item" id="fieldRole" style="margin-bottom:24px">
         <div class="ab-field-hint">Title / Role</div>
         <span class="ab-role ab-editable" id="abRole" spellcheck="false">Designer &amp; Creative Director</span>
       </div>
-      <div class="ab-divider"></div>
-      <div class="ab-field" id="fieldBio">
+      <div class="ab-divider ab-enter-item"></div>
+      <div class="ab-field ab-enter-item" id="fieldBio">
         <div class="ab-field-hint">Bio</div>
         <span class="ab-bio ab-editable" id="abBio" spellcheck="false">Write a short introduction about yourself here. Share your background, what drives your creative work, and the kind of projects you care about most.</span>
       </div>
-      <div class="ab-field" id="fieldDetail1">
+      <div class="ab-field ab-enter-item" id="fieldDetail1">
         <span class="ab-detail-label ab-editable" id="abLabel1" spellcheck="false">Based in</span>
         <span class="ab-detail-val ab-editable" id="abVal1" spellcheck="false">City, Country</span>
       </div>
-      <div class="ab-field" id="fieldDetail2">
+      <div class="ab-field ab-enter-item" id="fieldDetail2">
         <span class="ab-detail-label ab-editable" id="abLabel2" spellcheck="false">Disciplines</span>
         <span class="ab-detail-val ab-editable" id="abVal2" spellcheck="false">Brand Identity · Art Direction · Motion · Digital</span>
       </div>
-      <div class="ab-field" id="fieldDetail3">
+      <div class="ab-field ab-enter-item" id="fieldDetail3">
         <span class="ab-detail-label ab-editable" id="abLabel3" spellcheck="false">Contact</span>
         <span class="ab-detail-val ab-editable" id="abVal3" spellcheck="false"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b9d1dcd5d5d6f9c0d6cccbd7d8d4dc97dad6d4">[email&#160;protected]</a></span>
       </div>
@@ -1318,6 +1359,18 @@ function buildDrum(){
       const med=projects[i].media||[];
       if(med.length) openLightbox(i);
     });
+    // 3D tilt on hover (applied to inner so it doesn't fight updatePos)
+    const inner = el.querySelector('.card-inner');
+    el.addEventListener('mousemove', e => {
+      if(i !== current) return;
+      const r = el.getBoundingClientRect();
+      const nx = (e.clientX - r.left) / r.width  - 0.5;
+      const ny = (e.clientY - r.top)  / r.height - 0.5;
+      inner.style.transform = `perspective(700px) rotateY(${nx*10}deg) rotateX(${-ny*7}deg) scale(1.025)`;
+    });
+    el.addEventListener('mouseleave', () => {
+      inner.style.transform = '';
+    });
     drum.appendChild(el);
     slideIdx[i]=0;
     // start autoplay timer for all multi-media cards
@@ -1814,6 +1867,95 @@ document.getElementById('expEditToggle').addEventListener('click', () => {
 });
 
 renderExp();
+
+/* ══════════════════════════════════
+   INTERACTIONS
+══════════════════════════════════ */
+
+// ── 1. Cursor glow ──
+const glowEl = document.getElementById('cursor-glow');
+document.addEventListener('mousemove', e => {
+  glowEl.style.left = e.clientX + 'px';
+  glowEl.style.top  = e.clientY + 'px';
+});
+document.addEventListener('mouseenter', () => { glowEl.style.opacity = '1'; });
+document.addEventListener('mouseleave', () => { glowEl.style.opacity = '0'; });
+
+// ── 2. Magnetic nav links ──
+document.querySelectorAll('#g-nav a').forEach(link => {
+  link.addEventListener('mousemove', e => {
+    const r = link.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    const dx = (e.clientX - cx) * 0.32, dy = (e.clientY - cy) * 0.32;
+    link.style.transform = `translate(${dx}px,${dy}px)`;
+  });
+  link.addEventListener('mouseleave', () => {
+    link.style.transform = '';
+  });
+});
+
+// ── 3. About entrance animation ──
+function triggerAboutEntrance() {
+  const items = document.querySelectorAll('.ab-enter-item');
+  items.forEach(el => el.classList.remove('visible'));
+  items.forEach((el, i) => {
+    setTimeout(() => el.classList.add('visible'), 80 + i * 80);
+  });
+}
+
+// ── 4. Experience row entrance (IntersectionObserver) ──
+function observeExpRows() {
+  const rows = document.querySelectorAll('.exp-row');
+  if(!rows.length) return;
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((entry, _) => {
+      if(entry.isIntersecting) {
+        const allRows = document.querySelectorAll('.exp-row');
+        let delay = 0;
+        allRows.forEach((row, i) => {
+          if(row === entry.target) delay = i * 60;
+        });
+        setTimeout(() => entry.target.classList.add('exp-visible'), delay);
+        obs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  rows.forEach(row => obs.observe(row));
+}
+
+// ── 5. Work stage horizontal drag ──
+{
+  const stageEl = document.getElementById('stage');
+  let dragX = 0, dragStarted = false, dragMoved = false;
+  stageEl.addEventListener('pointerdown', e => {
+    if(e.pointerType === 'touch') return; // handled by touchend
+    dragX = e.clientX; dragStarted = true; dragMoved = false;
+  });
+  stageEl.addEventListener('pointermove', e => {
+    if(!dragStarted) return;
+    if(Math.abs(e.clientX - dragX) > 6) dragMoved = true;
+  });
+  stageEl.addEventListener('pointerup', e => {
+    if(!dragStarted) return;
+    dragStarted = false;
+    const diff = e.clientX - dragX;
+    if(dragMoved && Math.abs(diff) > 38) goTo(current + (diff < 0 ? 1 : -1));
+    dragMoved = false;
+  });
+  stageEl.addEventListener('pointercancel', () => { dragStarted = false; });
+}
+
+// ── Hook goScreen for entrance animations ──
+const _gsOrig = goScreen;
+goScreen = function(id) {
+  _gsOrig(id);
+  if(id === 's-about') {
+    setTimeout(triggerAboutEntrance, 300);
+  }
+  if(id === 's-experience') {
+    setTimeout(observeExpRows, 350);
+  }
+};
 
 /* ══════════════════════════════════
    SAVE / EXPORT
