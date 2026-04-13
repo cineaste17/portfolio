@@ -515,6 +515,10 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
     padding:36px 24px 32px;justify-content:center;align-items:center;
     flex-shrink:0;
   }
+  .ab-photo-wrap{
+    max-width:min(200px,52vw)!important;
+    max-height:min(266px,69vw)!important;
+  }
   .ab-text-col{
     height:auto;padding:36px 24px 80px;
     justify-content:flex-start;flex-shrink:0;
@@ -537,15 +541,16 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
   .exp-del-btn{ top:28px; }
 
   /* ── Edit bars ── */
-  .edit-bar,.exp-edit-bar-wrap{bottom:16px;padding:10px 14px;}
+  .edit-bar,#exp-edit-bar{bottom:16px;padding:10px 14px;}
   .edit-bar-btn,.exp-bar-btn{padding:7px 14px;}
 
   /* ── Crop modal ── */
   .crop-stage{ height:min(280px,62vw); }
   .crop-hint-txt{ display:none; }
 
-  /* ── Topbar buttons back visible on action bar ── */
-  #g-topbar-edit-actions{ display:flex!important; }
+  /* ── Mobile edit slot (between logo and hamburger) ── */
+  #g-mobile-edit{ display:flex;align-items:center; }
+  #g-mobile-edit .btn-sm{ font-size:8px;padding:5px 10px; }
 }
 </style>
 </head>
@@ -564,6 +569,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
     <button class="btn-sm" id="expEditToggle" style="display:none">Edit Page</button>
     <button class="btn-sm" id="saveFileBtn" title="Export as standalone HTML file">↓ Save File</button>
   </div>
+  <div id="g-mobile-edit" style="display:none"></div>
   <div id="g-hamburger" onclick="toggleMobileNav()" aria-label="Menu">
     <span></span><span></span><span></span>
   </div>
@@ -655,6 +661,11 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
     <div class="pf-stage" id="stage">
       <div class="drum" id="drum"></div>
       <div class="scroll-hint" id="scrollHint">Scroll to explore</div>
+      <div id="pf-mobile-bar">
+        <div class="pmb-num" id="pmbNum">001</div>
+        <div class="pmb-title" id="pmbTitle"></div>
+        <div class="pmb-cat" id="pmbCat"></div>
+      </div>
     </div>
     <div class="pf-right">
       <div class="scroll-btn" id="arrowUp">↑</div>
@@ -812,13 +823,36 @@ function goScreen(id){
   document.getElementById('abEditToggle').style.display = id==='s-about' ? '' : 'none';
   document.getElementById('openEditBtn').style.display  = id==='s-portfolio'  ? '' : 'none';
   document.getElementById('expEditToggle').style.display = id==='s-experience'  ? '' : 'none';
+  // Mobile edit slot
+  const mEdit=document.getElementById('g-mobile-edit');
+  if(mEdit){
+    if(id==='s-about') mEdit.innerHTML='<button class="btn-sm" onclick="abEnterEdit()">Edit</button>';
+    else if(id==='s-portfolio') mEdit.innerHTML='<button class="btn-sm" onclick="document.getElementById(\'editPanel\').classList.add(\'open\');renderList()">Edit</button>';
+    else if(id==='s-experience') mEdit.innerHTML='<button class="btn-sm" onclick="expEnterEdit()">Edit</button>';
+    else mEdit.innerHTML='';
+  }
 
   if(id==='s-portfolio') rebuildAll();
   if(id==='s-about') requestAnimationFrame(()=>layoutAboutPhoto());
+  // close mobile nav if open
+  if(typeof closeMobileNav==='function') closeMobileNav();
 }
 
 // Landing click
 document.getElementById('s-landing').addEventListener('click',()=>goScreen('s-about'));
+
+/* ── Mobile nav ── */
+function toggleMobileNav(){
+  const hb=document.getElementById('g-hamburger');
+  const mn=document.getElementById('g-mobile-nav');
+  const open=hb.classList.toggle('open');
+  mn.classList.toggle('show',open);
+}
+function closeMobileNav(){
+  document.getElementById('g-hamburger').classList.remove('open');
+  document.getElementById('g-mobile-nav').classList.remove('show');
+}
+document.getElementById('mobileSaveBtn').addEventListener('click',()=>{closeMobileNav();exportPortfolio();});
 
 // Init landing
 const sl=document.getElementById('s-landing');
@@ -1392,6 +1426,10 @@ function updateInfo(){
     document.getElementById('infoTags').innerHTML=(p.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('');
     ids.forEach(id=>document.getElementById(id).classList.remove('info-changing'));
     updateMediaStrip();
+    // Mobile bar
+    document.getElementById('pmbNum').textContent=String(current+1).padStart(3,'0')+' / '+String(n).padStart(3,'0');
+    document.getElementById('pmbTitle').textContent=p.title||'';
+    document.getElementById('pmbCat').textContent=p.category||'';
   },180);
   document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===current));
   const thumb=document.getElementById('thumb'),trackH=160,thumbH=Math.max(20,160/Math.max(projects.length,1));
