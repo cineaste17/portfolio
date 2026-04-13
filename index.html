@@ -859,7 +859,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
   <div class="lb-nav prev" id="lbPrev">←</div>
   <div class="lb-inner" id="lbInner">
     <img id="lbMedia" src="" alt="" style="display:none">
-    <video id="lbVideo" controls style="display:none"></video>
+    <video id="lbVideo" controls playsinline style="display:none"></video>
   </div>
   <div class="lb-nav next" id="lbNext">→</div>
   <div class="lb-title" id="lbTitle"></div>
@@ -1608,8 +1608,10 @@ let lbPI=0,lbSI=0;
 function openLightbox(pi){
   const p=projects[pi];const media=p.media||[];if(!media.length)return;
   lbPI=pi;lbSI=slideIdx[pi]||0;
+  // renderLbSlide (including vid.play) must run synchronously within the user gesture
+  renderLbSlide();
   const lb=document.getElementById('lightbox');lb.style.display='flex';
-  requestAnimationFrame(()=>{lb.classList.add('open');requestAnimationFrame(()=>{lb.classList.add('ready');renderLbSlide();});});
+  requestAnimationFrame(()=>{lb.classList.add('open');requestAnimationFrame(()=>lb.classList.add('ready'));});
 }
 function closeLightbox(){
   const lb=document.getElementById('lightbox');lb.classList.remove('ready');
@@ -1620,8 +1622,15 @@ function renderLbSlide(){
   const p=projects[lbPI];const media=p.media||[];if(!media.length)return;
   const m=media[lbSI];const img=document.getElementById('lbMedia');const vid=document.getElementById('lbVideo');
   stopLbVid();
-  if(m.type==='video'){img.style.display='none';vid.style.display='block';vid.src=m.src;vid.load();vid.play().catch(()=>{});}
-  else{vid.style.display='none';img.style.display='block';img.src=m.src;}
+  if(m.type==='video'){
+    img.style.display='none';vid.style.display='block';
+    vid.muted=false;vid.volume=1;
+    vid.src=m.src;
+    // play() called synchronously so browser keeps user-gesture context for audio
+    vid.play().catch(()=>{});
+  } else {
+    vid.style.display='none';img.style.display='block';img.src=m.src;
+  }
   document.getElementById('lbTitle').textContent=p.title||'';
   document.getElementById('lbCounter').textContent=`${String(lbSI+1).padStart(2,'0')} / ${String(media.length).padStart(2,'0')}`;
   document.getElementById('lbPrev').style.opacity=media.length>1?'1':'0';
