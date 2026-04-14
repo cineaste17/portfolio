@@ -2159,15 +2159,16 @@ async function publishToGitHub() {
   if(_ghPublishing) return;
   let token = localStorage.getItem('pf_gh_token');
   if(!token) {
-    token = prompt('GitHub Personal Access Token:');
+    token = prompt('GitHub Personal Access Token\n(Settings → Developer settings → Personal access tokens → Tokens classic → repo scope):');
     if(!token) return;
+    token = token.trim();
     localStorage.setItem('pf_gh_token', token);
   }
   _ghPublishing = true;
   toast('Publishing…');
   try {
     const base = `https://api.github.com/repos/${GH_REPO}`;
-    const headers = { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' };
+    const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'X-GitHub-Api-Version': '2022-11-28' };
 
     // 1. Build HTML and encode to base64 (chunked to avoid stack overflow)
     const html = buildPortfolioHTML();
@@ -2182,7 +2183,7 @@ async function publishToGitHub() {
       method: 'POST', headers,
       body: JSON.stringify({ content: b64, encoding: 'base64' })
     });
-    if(!blobRes.ok) throw new Error('blob ' + blobRes.status);
+    if(!blobRes.ok){const t=await blobRes.text();throw new Error('blob '+blobRes.status+': '+t.slice(0,120));}
     const { sha: blobSha } = await blobRes.json();
 
     // 3. Get current HEAD commit sha
