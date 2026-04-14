@@ -2184,7 +2184,7 @@ async function publishToGitHub() {
     const { sha: blobSha } = await blobRes.json();
 
     // 3. Get current HEAD commit sha
-    const refRes = await fetch(`${base}/git/ref/heads/main`, { headers });
+    const refRes = await fetch(`${base}/git/refs/heads/main`, { headers });
     if(!refRes.ok) throw new Error('ref ' + refRes.status);
     const { object: { sha: commitSha } } = await refRes.json();
 
