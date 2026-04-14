@@ -659,8 +659,8 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
    ABOUT ENTRANCE ANIMATIONS
 ════════════════════════════ */
 .ab-enter-item{
-  opacity:0;transform:translateY(14px);
-  transition:opacity 1.1s cubic-bezier(.22,1,.36,1), transform 1.1s cubic-bezier(.22,1,.36,1);
+  opacity:0;transform:translateY(18px);
+  transition:opacity 1.0s cubic-bezier(.22,1,.36,1),transform 1.0s cubic-bezier(.22,1,.36,1);
 }
 .ab-enter-item.visible{opacity:1;transform:translateY(0);}
 
@@ -1124,6 +1124,7 @@ function getEditable(id){
 }
 
 function abEnterEdit(){
+  if(!sessionStorage.getItem('pf_unlocked')){requirePassword(abEnterEdit);return;}
   abEditing=true;
   abSnapshot=JSON.parse(JSON.stringify(abData));
   // Enable contenteditable
@@ -1736,7 +1737,7 @@ document.addEventListener('keydown',e=>{
 }
 
 /* ── PROJECT EDITOR ── */
-function openEditor(){document.getElementById('editPanel').classList.add('open');renderList();editIdx=-1;showEmpty();}
+function openEditor(){if(!sessionStorage.getItem('pf_unlocked')){requirePassword(openEditor);return;}document.getElementById('editPanel').classList.add('open');renderList();editIdx=-1;showEmpty();}
 function closeEditor(){document.getElementById('editPanel').classList.remove('open');rebuildAll();}
 function showEmpty(){document.getElementById('epEmpty').style.display='flex';document.getElementById('epForm').style.display='none';}
 function renderList(){
@@ -1973,6 +1974,7 @@ function applyExpEditState() {
 }
 
 function expEnterEdit() {
+  if(!sessionStorage.getItem('pf_unlocked')){requirePassword(expEnterEdit);return;}
   expEditing = true;
   expSnapshot = JSON.parse(JSON.stringify(expData));
   applyExpEditState();
@@ -2044,19 +2046,14 @@ document.querySelectorAll('#g-nav a').forEach(link => {
 // ── 3. About entrance animation ──
 function triggerAboutEntrance() {
   const items = document.querySelectorAll('.ab-enter-item');
-  // force transition reset: remove visible, then wait a frame before re-adding
-  items.forEach(el => {
-    el.classList.remove('visible');
-    el.style.transition = 'none';
-  });
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      items.forEach((el, i) => {
-        el.style.transition = '';
-        setTimeout(() => el.classList.add('visible'), 120 + i * 110);
-      });
+  // reset to hidden
+  items.forEach(el => { el.classList.remove('visible'); el.style.transition='none'; });
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    items.forEach((el, i) => {
+      el.style.transition = '';
+      setTimeout(() => el.classList.add('visible'), i * 110);
     });
-  });
+  }));
 }
 
 // ── 4. Experience row entrance (IntersectionObserver) ──
@@ -2430,13 +2427,6 @@ document.addEventListener('keydown', e => {
   if(e.key === 'Escape') closePwGate();
 });
 
-// Wrap all edit entry points
-const _rawAbEnterEdit = abEnterEdit;
-abEnterEdit = () => requirePassword(_rawAbEnterEdit);
-const _rawExpEnterEdit = expEnterEdit;
-expEnterEdit = () => requirePassword(_rawExpEnterEdit);
-const _rawOpenEditor = openEditor;
-openEditor = () => requirePassword(_rawOpenEditor);
 
 </script>
 
