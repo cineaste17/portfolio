@@ -410,6 +410,17 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
    TOAST
 ════════════════════════════ */
 #toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(6px);background:var(--fg);color:var(--bg);font-family:var(--font-mono);font-size:9px;letter-spacing:.2em;padding:9px 20px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:999;}
+
+/* ── PASSWORD GATE ── */
+#pwGate{position:fixed;inset:0;z-index:800;background:rgba(255,255,255,.97);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;}
+#pwGate.show{display:flex;}
+.pw-box{display:flex;flex-direction:column;align-items:center;gap:16px;}
+.pw-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.35em;color:var(--soft);text-transform:uppercase;}
+.pw-dots{display:flex;gap:10px;}
+.pw-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .2s;}
+.pw-dot.filled{background:var(--fg);}
+.pw-error{font-family:var(--font-mono);font-size:8px;letter-spacing:.2em;color:#c00;opacity:0;transition:opacity .2s;}
+.pw-error.show{opacity:1;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
 /* ── SMOOTH INTERACTIONS ── */
@@ -613,21 +624,13 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
 /* ════════════════════════════
    CURSOR GLOW
 ════════════════════════════ */
-#cursor-glow{
-  position:fixed;pointer-events:none;z-index:9999;
-  width:480px;height:480px;border-radius:50%;
-  background:radial-gradient(circle,rgba(0,0,0,.11) 0%,rgba(0,0,0,.055) 28%,transparent 68%);
-  transform:translate(-50%,-50%);
-  transition:opacity .5s;
-  mix-blend-mode:multiply;
-}
 
 /* ════════════════════════════
    ABOUT ENTRANCE ANIMATIONS
 ════════════════════════════ */
 .ab-enter-item{
-  opacity:0;transform:translateY(18px);
-  transition:opacity .65s cubic-bezier(.16,1,.3,1), transform .65s cubic-bezier(.16,1,.3,1);
+  opacity:0;transform:translateY(14px);
+  transition:opacity 1.1s cubic-bezier(.22,1,.36,1), transform 1.1s cubic-bezier(.22,1,.36,1);
 }
 .ab-enter-item.visible{opacity:1;transform:translateY(0);}
 
@@ -635,8 +638,8 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
    EXPERIENCE ROW ENTRANCE
 ════════════════════════════ */
 .exp-row{
-  opacity:0;transform:translateY(22px);
-  transition:opacity .85s cubic-bezier(.16,1,.3,1),transform .85s cubic-bezier(.16,1,.3,1);
+  opacity:0;transform:translateY(18px);
+  transition:opacity 1.0s cubic-bezier(.22,1,.36,1),transform 1.0s cubic-bezier(.22,1,.36,1);
 }
 .exp-row.exp-visible{opacity:1;transform:translateY(0);}
 
@@ -650,7 +653,6 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
 </style>
 </head>
 <body>
-<div id="cursor-glow"></div>
 
 <div id="g-topbar">
   <div id="g-logo" onclick="goScreen('s-landing')">Portfolio</div>
@@ -1995,20 +1997,6 @@ renderExp();
    INTERACTIONS
 ══════════════════════════════════ */
 
-// ── 1. Cursor glow (lerp trailing) ──
-const glowEl = document.getElementById('cursor-glow');
-let _mx = window.innerWidth/2, _my = window.innerHeight/2;
-let _gx = _mx, _gy = _my, _glowVisible = false;
-document.addEventListener('mousemove', e => { _mx = e.clientX; _my = e.clientY; });
-document.addEventListener('mouseenter', () => { _glowVisible=true; glowEl.style.opacity='1'; });
-document.addEventListener('mouseleave', () => { _glowVisible=false; glowEl.style.opacity='0'; });
-(function glowLoop(){
-  _gx += (_mx - _gx) * 0.1;
-  _gy += (_my - _gy) * 0.1;
-  glowEl.style.left = _gx + 'px';
-  glowEl.style.top  = _gy + 'px';
-  requestAnimationFrame(glowLoop);
-})();
 
 // ── 2. Magnetic nav links ──
 document.querySelectorAll('#g-nav a').forEach(link => {
@@ -2028,7 +2016,7 @@ function triggerAboutEntrance() {
   const items = document.querySelectorAll('.ab-enter-item');
   items.forEach(el => el.classList.remove('visible'));
   items.forEach((el, i) => {
-    setTimeout(() => el.classList.add('visible'), 80 + i * 80);
+    setTimeout(() => el.classList.add('visible'), 120 + i * 110);
   });
 }
 
@@ -2337,6 +2325,103 @@ document.addEventListener('keydown',e=>{
 });
 cropModal.addEventListener('click',e=>{if(e.target===cropModal)closeCropModal();});
 
+/* ══════════════════════════════════
+   PASSWORD GATE
+══════════════════════════════════ */
+const PW = '1234';
+const PW_SESSION = 'pf_unlocked';
+let _pwCallback = null;
+
+function requirePassword(cb) {
+  if(sessionStorage.getItem(PW_SESSION) === '1') { cb(); return; }
+  _pwCallback = cb;
+  openPwGate();
+}
+
+function openPwGate() {
+  const gate = document.getElementById('pwGate');
+  gate.classList.add('show');
+  _pwInput = '';
+  renderPwDots();
+  document.getElementById('pwError').classList.remove('show');
+}
+
+function closePwGate() {
+  document.getElementById('pwGate').classList.remove('show');
+  _pwInput = '';
+  renderPwDots();
+}
+
+let _pwInput = '';
+function renderPwDots() {
+  document.querySelectorAll('.pw-dot').forEach((d,i) => {
+    d.classList.toggle('filled', i < _pwInput.length);
+  });
+}
+
+function pwKey(k) {
+  if(_pwInput.length >= 4) return;
+  _pwInput += k;
+  renderPwDots();
+  if(_pwInput.length === 4) {
+    if(_pwInput === PW) {
+      sessionStorage.setItem(PW_SESSION, '1');
+      closePwGate();
+      if(_pwCallback) { const cb = _pwCallback; _pwCallback = null; cb(); }
+    } else {
+      document.getElementById('pwError').classList.add('show');
+      setTimeout(() => {
+        _pwInput = '';
+        renderPwDots();
+        document.getElementById('pwError').classList.remove('show');
+      }, 700);
+    }
+  }
+}
+
+document.addEventListener('keydown', e => {
+  const gate = document.getElementById('pwGate');
+  if(!gate.classList.contains('show')) return;
+  if(e.key >= '0' && e.key <= '9') pwKey(e.key);
+  if(e.key === 'Backspace') { _pwInput = _pwInput.slice(0,-1); renderPwDots(); document.getElementById('pwError').classList.remove('show'); }
+  if(e.key === 'Escape') closePwGate();
+});
+
+// Wrap all edit entry points
+const _rawAbEnterEdit = abEnterEdit;
+abEnterEdit = () => requirePassword(_rawAbEnterEdit);
+const _rawExpEnterEdit = expEnterEdit;
+expEnterEdit = () => requirePassword(_rawExpEnterEdit);
+const _rawOpenEditor = openEditor;
+openEditor = () => requirePassword(_rawOpenEditor);
+
 </script>
+
+<div id="pwGate">
+  <div class="pw-box">
+    <div class="pw-label">Enter Password</div>
+    <div class="pw-dots">
+      <div class="pw-dot"></div>
+      <div class="pw-dot"></div>
+      <div class="pw-dot"></div>
+      <div class="pw-dot"></div>
+    </div>
+    <div class="pw-error" id="pwError">Incorrect</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px;">
+      <button class="btn-sm" onclick="pwKey('1')">1</button>
+      <button class="btn-sm" onclick="pwKey('2')">2</button>
+      <button class="btn-sm" onclick="pwKey('3')">3</button>
+      <button class="btn-sm" onclick="pwKey('4')">4</button>
+      <button class="btn-sm" onclick="pwKey('5')">5</button>
+      <button class="btn-sm" onclick="pwKey('6')">6</button>
+      <button class="btn-sm" onclick="pwKey('7')">7</button>
+      <button class="btn-sm" onclick="pwKey('8')">8</button>
+      <button class="btn-sm" onclick="pwKey('9')">9</button>
+      <button class="btn-sm" onclick="_pwInput=_pwInput.slice(0,-1);renderPwDots();document.getElementById('pwError').classList.remove('show')" style="grid-column:1">⌫</button>
+      <button class="btn-sm" onclick="pwKey('0')">0</button>
+      <button class="btn-sm" onclick="closePwGate()">✕</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
