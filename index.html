@@ -2157,37 +2157,73 @@ async function publishToGitHub() {
   if(_ghPublishing) return;
   let token = localStorage.getItem('pf_gh_token');
   if(!token) {
-    token = prompt('GitHub Personal Access Token (stored locally, never uploaded):');
+    token = prompt('GitHub Personal Access Token:');
     if(!token) return;
     localStorage.setItem('pf_gh_token', token);
   }
   _ghPublishing = true;
   toast('Publishing…');
   try {
-    const api = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`;
+    const base = `https://api.github.com/repos/${GH_REPO}`;
     const headers = { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' };
-    const shaRes = await fetch(api, { headers });
-    if(!shaRes.ok) throw new Error('fetch sha failed: ' + shaRes.status);
-    const { sha } = await shaRes.json();
+
+    // 1. Build HTML and encode to base64 (chunked to avoid stack overflow)
     const html = buildPortfolioHTML();
-    // btoa doesn't handle unicode — use TextEncoder → base64
     const bytes = new TextEncoder().encode(html);
-    let binary = '';
-    bytes.forEach(b => binary += String.fromCharCode(b));
-    const content = btoa(binary);
-    const putRes = await fetch(api, {
-      method: 'PUT', headers,
-      body: JSON.stringify({ message: 'portfolio: update content', content, sha })
+    const chunks = [];
+    for(let i = 0; i < bytes.length; i += 8192)
+      chunks.push(String.fromCharCode.apply(null, bytes.subarray(i, i + 8192)));
+    const b64 = btoa(chunks.join(''));
+
+    // 2. Create blob (no size limit unlike Contents API)
+    const blobRes = await fetch(`${base}/git/blobs`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ content: b64, encoding: 'base64' })
     });
-    if(!putRes.ok) throw new Error('push failed: ' + putRes.status);
+    if(!blobRes.ok) throw new Error('blob ' + blobRes.status);
+    const { sha: blobSha } = await blobRes.json();
+
+    // 3. Get current HEAD commit sha
+    const refRes = await fetch(`${base}/git/ref/heads/main`, { headers });
+    if(!refRes.ok) throw new Error('ref ' + refRes.status);
+    const { object: { sha: commitSha } } = await refRes.json();
+
+    // 4. Get current tree sha
+    const commitRes = await fetch(`${base}/git/commits/${commitSha}`, { headers });
+    if(!commitRes.ok) throw new Error('commit ' + commitRes.status);
+    const { tree: { sha: treeSha } } = await commitRes.json();
+
+    // 5. Create new tree with updated file
+    const treeRes = await fetch(`${base}/git/trees`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ base_tree: treeSha, tree: [{ path: GH_FILE, mode: '100644', type: 'blob', sha: blobSha }] })
+    });
+    if(!treeRes.ok) throw new Error('tree ' + treeRes.status);
+    const { sha: newTreeSha } = await treeRes.json();
+
+    // 6. Create commit
+    const newCommitRes = await fetch(`${base}/git/commits`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ message: 'portfolio: update content', tree: newTreeSha, parents: [commitSha] })
+    });
+    if(!newCommitRes.ok) throw new Error('newcommit ' + newCommitRes.status);
+    const { sha: newCommitSha } = await newCommitRes.json();
+
+    // 7. Update HEAD ref
+    const patchRes = await fetch(`${base}/git/refs/heads/main`, {
+      method: 'PATCH', headers,
+      body: JSON.stringify({ sha: newCommitSha })
+    });
+    if(!patchRes.ok) throw new Error('patch ' + patchRes.status);
+
     toast('Published ↑ live in ~1 min');
   } catch(e) {
     console.error(e);
-    if(e.message.includes('401') || e.message.includes('403')) {
+    if(String(e).includes('401') || String(e).includes('403')) {
       localStorage.removeItem('pf_gh_token');
-      toast('Token invalid — enter again');
+      toast('Token invalid — please retry');
     } else {
-      toast('Publish failed');
+      toast('Publish failed: ' + e.message);
     }
   } finally {
     _ghPublishing = false;
