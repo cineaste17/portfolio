@@ -1946,7 +1946,15 @@ const EXP_DEFAULTS = {
 };
 
 function loadExp() {
-  try { const r = localStorage.getItem(EXP_KEY); if(r) return JSON.parse(r); } catch(e) {}
+  try {
+    const r = localStorage.getItem(EXP_KEY);
+    if(r) {
+      const d = JSON.parse(r);
+      // Migrate: add missing sections from defaults
+      Object.keys(EXP_DEFAULTS).forEach(k => { if(!d[k]) d[k] = JSON.parse(JSON.stringify(EXP_DEFAULTS[k])); });
+      return d;
+    }
+  } catch(e) {}
   return JSON.parse(JSON.stringify(EXP_DEFAULTS));
 }
 function saveExp() { localStorage.setItem(EXP_KEY, JSON.stringify(expData)); }
@@ -1965,6 +1973,7 @@ function renderExpSection(key, listId) {
   const list = document.getElementById(listId);
   if(!list) return;
   list.innerHTML = '';
+  if(!expData[key]) return;
   expData[key].forEach((item, idx) => {
     const row = document.createElement('div');
     row.className = 'exp-row';
