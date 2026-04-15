@@ -2124,7 +2124,367 @@ function buildPortfolioHTML() {
   const stored = {};
   KEYS.forEach(k => { const v = localStorage.getItem(k); if(v !== null) stored[k] = v; });
   const dataScript =
-    `
+    `<script id="_pf_data">(function(){try{` +
+    `var d=${JSON.stringify(stored)};` +
+    `Object.keys(d).forEach(function(k){localStorage.setItem(k,d[k]);});` +
+    `}catch(e){}})();<\/script>`;
+  let html = document.documentElement.outerHTML.replace(/^html\s*/i, '');
+  html = html.replace(/<script id="_pf_data">[\s\S]*?<\/script>/g, '');
+  html = html.replace(/class="screen[^"]*active[^"]*"/g, 'class="screen"');
+  html = html.replace(/(<div id="g-topbar")[^>]*>/g, '$1>');
+  html = html.replace(/<button id="fontBtn"[\s\S]*?<\/button>/g, '');
+  html = html.replace(/<div id="fontPanel"[\s\S]*?<\/div>/g, '');
+  html = html.replace(/(<div class="drum" id="drum">)[\s\S]*?(<\/div>)/, '$1$2');
+  html = html.replace(/(<div class="ep-list" id="epList">)[\s\S]*?(<\/div>)/, '$1$2');
+  html = html.replace(/(<div id="exp-intern-list">)[\s\S]*?(<\/div>)/, '$1$2');
+  html = html.replace(/(<div id="exp-campus-list">)[\s\S]*?(<\/div>)/, '$1$2');
+  html = html.replace(/(<div class="pf-dots" id="dots">)[\s\S]*?(<\/div>)/, '$1$2');
+  html = html.replace(/(<meta charset="UTF-8">)/, '$1\n' + dataScript);
+  return '<!DOCTYPE html>\n' + html;
+}
+
+function exportPortfolio() {
+  const html = buildPortfolioHTML();
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = 'portfolio.html';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  toast('Saved as portfolio.html ↓');
+}
+
+// ── Auto-publish to GitHub Pages after every save ──
+const GH_REPO = 'cineaste17/portfolio';
+const GH_FILE = 'index.html';
+let _ghPublishing = false;
+
+async function publishToGitHub() {
+  if(_ghPublishing) return;
+  let token = localStorage.getItem('pf_gh_token');
+  if(!token) {
+    token = prompt('GitHub Personal Access Token\n(Settings → Developer settings → Personal access tokens → Tokens classic → repo scope):');
+    if(!token) return;
+    token = token.trim();
+    localStorage.setItem('pf_gh_token', token);
+    updateTokenResetBtn();
+  }
+  _ghPublishing = true;
+  toast('Publishing…');
+  try {
+    const base = `https://api.github.com/repos/${GH_REPO}`;
+    const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'X-GitHub-Api-Version': '2022-11-28' };
+
+    // 1. Build HTML and encode to base64 (chunked to avoid stack overflow)
+    const html = buildPortfolioHTML();
+    const bytes = new TextEncoder().encode(html);
+    const chunks = [];
+    for(let i = 0; i < bytes.length; i += 8192)
+      chunks.push(String.fromCharCode.apply(null, bytes.subarray(i, i + 8192)));
+    const b64 = btoa(chunks.join(''));
+
+    // 2. Create blob (no size limit unlike Contents API)
+    const blobRes = await fetch(`${base}/git/blobs`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ content: b64, encoding: 'base64' })
+    });
+    if(!blobRes.ok){const t=await blobRes.text();throw new Error('blob '+blobRes.status+': '+t.slice(0,120));}
+    const { sha: blobSha } = await blobRes.json();
+
+    // 3. Get current HEAD commit sha
+    const refRes = await fetch(`${base}/git/refs/heads/main`, { headers });
+    if(!refRes.ok) throw new Error('ref ' + refRes.status);
+    const { object: { sha: commitSha } } = await refRes.json();
+
+    // 4. Get current tree sha
+    const commitRes = await fetch(`${base}/git/commits/${commitSha}`, { headers });
+    if(!commitRes.ok) throw new Error('commit ' + commitRes.status);
+    const { tree: { sha: treeSha } } = await commitRes.json();
+
+    // 5. Create new tree with updated file
+    const treeRes = await fetch(`${base}/git/trees`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ base_tree: treeSha, tree: [{ path: GH_FILE, mode: '100644', type: 'blob', sha: blobSha }] })
+    });
+    if(!treeRes.ok) throw new Error('tree ' + treeRes.status);
+    const { sha: newTreeSha } = await treeRes.json();
+
+    // 6. Create commit
+    const newCommitRes = await fetch(`${base}/git/commits`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ message: 'portfolio: update content', tree: newTreeSha, parents: [commitSha] })
+    });
+    if(!newCommitRes.ok) throw new Error('newcommit ' + newCommitRes.status);
+    const { sha: newCommitSha } = await newCommitRes.json();
+
+    // 7. Update HEAD ref
+    const patchRes = await fetch(`${base}/git/refs/heads/main`, {
+      method: 'PATCH', headers,
+      body: JSON.stringify({ sha: newCommitSha })
+    });
+    if(!patchRes.ok) throw new Error('patch ' + patchRes.status);
+
+    toast('Published ↑ live in ~1 min');
+  } catch(e) {
+    console.error(e);
+    localStorage.removeItem('pf_gh_token');
+    updateTokenResetBtn();
+    toast('Publish failed: ' + e.message + ' — token cleared, save again to re-enter');
+  } finally {
+    _ghPublishing = false;
+  }
+}
+
+function resetGhToken() {
+  localStorage.removeItem('pf_gh_token');
+  updateTokenResetBtn();
+  toast('GitHub token cleared — save to re-enter');
+}
+
+function updateTokenResetBtn() {
+  const has = !!localStorage.getItem('pf_gh_token');
+  const mb = document.getElementById('mobileTokenReset');
+  const db = document.getElementById('desktopTokenReset');
+  if(mb) mb.style.display = has ? 'block' : 'none';
+  if(db) db.style.display = has ? 'inline-block' : 'none';
+}
+
+// Hook all save actions to also publish
+const _origAbSave = abSave;
+abSave = async function() { await _origAbSave.apply(this, arguments); publishToGitHub(); };
+const _origExpSave = expSave;
+expSave = function() { _origExpSave.apply(this, arguments); publishToGitHub(); };
+const _origSaveProjects = saveProjects;
+saveProjects = function() { _origSaveProjects.apply(this, arguments); publishToGitHub(); };
+
+document.getElementById('saveFileBtn').addEventListener('click', exportPortfolio);
+
+/* ══════════════════════════════════
+   MEDIA CROP MODAL
+══════════════════════════════════ */
+let cropPI=-1,cropMI=-1;
+const cropModal=document.getElementById('cropModal');
+const cropStageEl=document.getElementById('cropStage');
+const cropImgEl=document.getElementById('cropImg');
+const cropVidEl=document.getElementById('cropVid');
+const cropZoomEl=document.getElementById('cropZoom');
+// crop state: panX/panY are pixel offsets from center; cropZoom is scale
+let cropSt={panX:0,panY:0,cropZoom:1,natW:0,natH:0};
+
+function cropCover(){
+  const sw=cropStageEl.offsetWidth||660,sh=cropStageEl.offsetHeight||360;
+  if(!cropSt.natW||!cropSt.natH)return{sc:1,dw:sw,dh:sh};
+  const sc=Math.max(sw/cropSt.natW,sh/cropSt.natH)*cropSt.cropZoom;
+  return{sc,sw,sh,dw:cropSt.natW*sc,dh:cropSt.natH*sc};
+}
+function applyCropLayout(){
+  const{sw,sh,dw,dh}=cropCover();
+  // clamp pan
+  const maxX=Math.max(0,(dw-sw)/2), maxY=Math.max(0,(dh-sh)/2);
+  cropSt.panX=Math.max(-maxX,Math.min(maxX,cropSt.panX));
+  cropSt.panY=Math.max(-maxY,Math.min(maxY,cropSt.panY));
+  const tx=(sw-dw)/2+cropSt.panX, ty=(sh-dh)/2+cropSt.panY;
+  const m=cropImgEl.style.display!=='none'?cropImgEl:cropVidEl;
+  m.style.width=dw+'px'; m.style.height=dh+'px';
+  m.style.left=tx+'px'; m.style.top=ty+'px';
+}
+function cropComputeFocal(){
+  const{sw,sh,dw,dh}=cropCover();
+  // focalX = fraction of image width where center of view lies
+  const focalX=(dw/2-cropSt.panX)/dw*100;
+  const focalY=(dh/2-cropSt.panY)/dh*100;
+  return{focalX:Math.max(0,Math.min(100,focalX)),focalY:Math.max(0,Math.min(100,focalY))};
+}
+function cropRestoreFromFocal(fx,fy,zoom){
+  cropSt.cropZoom=zoom||1;
+  cropZoomEl.value=cropSt.cropZoom;
+  const{dw,dh}=cropCover();
+  cropSt.panX=dw/2-fx/100*dw;
+  cropSt.panY=dh/2-fy/100*dh;
+  applyCropLayout();
+}
+
+function openCropModal(pi,mi){
+  if(pi<0||mi<0)return;
+  const m=projects[pi]&&projects[pi].media[mi];if(!m)return;
+  cropPI=pi;cropMI=mi;
+  cropSt={panX:0,panY:0,cropZoom:m.cropZoom||1,natW:0,natH:0};
+  cropZoomEl.value=cropSt.cropZoom;
+  const isVid=m.type==='video';
+  cropImgEl.style.display=isVid?'none':'block';
+  cropVidEl.style.display=isVid?'block':'none';
+  if(isVid){
+    cropVidEl.src=m.src; cropVidEl.load(); cropVidEl.play().catch(()=>{});
+    cropVidEl.onloadedmetadata=()=>{
+      cropSt.natW=cropVidEl.videoWidth||640; cropSt.natH=cropVidEl.videoHeight||360;
+      cropRestoreFromFocal(m.focalX!==undefined?m.focalX:50, m.focalY!==undefined?m.focalY:50, cropSt.cropZoom);
+    };
+  } else {
+    cropImgEl.src=m.src;
+    cropImgEl.onload=()=>{
+      cropSt.natW=cropImgEl.naturalWidth; cropSt.natH=cropImgEl.naturalHeight;
+      cropRestoreFromFocal(m.focalX!==undefined?m.focalX:50, m.focalY!==undefined?m.focalY:50, cropSt.cropZoom);
+    };
+    if(cropImgEl.complete&&cropImgEl.naturalWidth){
+      cropSt.natW=cropImgEl.naturalWidth; cropSt.natH=cropImgEl.naturalHeight;
+      cropRestoreFromFocal(m.focalX!==undefined?m.focalX:50, m.focalY!==undefined?m.focalY:50, cropSt.cropZoom);
+    }
+  }
+  cropModal.style.display='flex';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    cropModal.classList.add('open');
+    requestAnimationFrame(()=>cropModal.classList.add('ready'));
+  }));
+}
+function closeCropModal(){
+  cropModal.classList.remove('ready');
+  setTimeout(()=>{
+    cropModal.classList.remove('open'); cropModal.style.display='none';
+    cropVidEl.pause(); cropVidEl.src='';
+  },300);
+}
+
+// drag
+let cDrag=false,cSX,cSY,cOX,cOY;
+cropStageEl.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  cropStageEl.setPointerCapture(e.pointerId);
+  cDrag=true; cSX=e.clientX; cSY=e.clientY; cOX=cropSt.panX; cOY=cropSt.panY;
+  cropStageEl.classList.add('dragging');
+});
+cropStageEl.addEventListener('pointermove',e=>{
+  if(!cDrag)return;
+  cropSt.panX=cOX+(e.clientX-cSX); cropSt.panY=cOY+(e.clientY-cSY);
+  applyCropLayout();
+});
+cropStageEl.addEventListener('pointerup',()=>{cDrag=false;cropStageEl.classList.remove('dragging');});
+cropStageEl.addEventListener('pointercancel',()=>{cDrag=false;cropStageEl.classList.remove('dragging');});
+// touch pinch-to-zoom
+let pinchDist0=0,pinchZoom0=1;
+cropStageEl.addEventListener('touchstart',e=>{
+  if(e.touches.length===2){
+    pinchDist0=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    pinchZoom0=cropSt.cropZoom;
+  }
+},{passive:true});
+cropStageEl.addEventListener('touchmove',e=>{
+  if(e.touches.length===2){
+    e.preventDefault();
+    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    cropSt.cropZoom=Math.max(1,Math.min(3,pinchZoom0*d/pinchDist0));
+    cropZoomEl.value=cropSt.cropZoom;
+    applyCropLayout();
+  }
+},{passive:false});
+// scroll to zoom
+cropStageEl.addEventListener('wheel',e=>{
+  e.preventDefault();
+  cropSt.cropZoom=Math.max(1,Math.min(3,cropSt.cropZoom*(e.deltaY>0?0.96:1.04)));
+  cropZoomEl.value=cropSt.cropZoom;
+  applyCropLayout();
+},{passive:false});
+// zoom slider
+cropZoomEl.addEventListener('input',()=>{
+  cropSt.cropZoom=parseFloat(cropZoomEl.value);
+  applyCropLayout();
+});
+// reset
+document.getElementById('cropReset').addEventListener('click',()=>{
+  cropSt.panX=0; cropSt.panY=0; cropSt.cropZoom=1;
+  cropZoomEl.value=1;
+  applyCropLayout();
+});
+// apply
+document.getElementById('cropDone').addEventListener('click',()=>{
+  if(cropPI<0||cropMI<0)return;
+  const m=projects[cropPI].media[cropMI];
+  if(m){
+    const{focalX,focalY}=cropComputeFocal();
+    m.focalX=parseFloat(focalX.toFixed(2));
+    m.focalY=parseFloat(focalY.toFixed(2));
+    m.cropZoom=parseFloat(cropSt.cropZoom.toFixed(3));
+  }
+  saveProjects();
+  closeCropModal();
+  renderMediaGrid();
+  if(currentScreen==='s-portfolio')rebuildAll();
+  toast('Crop applied');
+});
+// esc / backdrop
+document.addEventListener('keydown',e=>{
+  if(cropModal.classList.contains('open')&&e.key==='Escape')closeCropModal();
+});
+cropModal.addEventListener('click',e=>{if(e.target===cropModal)closeCropModal();});
+
+/* ══════════════════════════════════
+   PASSWORD GATE
+══════════════════════════════════ */
+const PW = '1234';
+const PW_SESSION = 'pf_unlocked';
+let _pwCallback = null;
+
+function requirePassword(cb) {
+  if(sessionStorage.getItem(PW_SESSION) === '1') { cb(); return; }
+  _pwCallback = cb;
+  openPwGate();
+}
+
+function openPwGate() {
+  const gate = document.getElementById('pwGate');
+  gate.classList.add('show');
+  requestAnimationFrame(() => gate.classList.add('ready'));
+  _pwInput = '';
+  renderPwDots();
+  document.getElementById('pwError').classList.remove('show');
+}
+
+function closePwGate() {
+  const gate = document.getElementById('pwGate');
+  gate.classList.remove('ready');
+  setTimeout(() => gate.classList.remove('show'), 350);
+  _pwInput = '';
+  renderPwDots();
+}
+
+let _pwInput = '';
+function renderPwDots() {
+  document.querySelectorAll('.pw-dot').forEach((d,i) => {
+    d.classList.toggle('filled', i < _pwInput.length);
+  });
+}
+
+function pwKey(k) {
+  if(_pwInput.length >= 4) return;
+  _pwInput += k;
+  renderPwDots();
+  if(_pwInput.length === 4) {
+    if(_pwInput === PW) {
+      sessionStorage.setItem(PW_SESSION, '1');
+      closePwGate();
+      if(_pwCallback) { const cb = _pwCallback; _pwCallback = null; cb(); }
+    } else {
+      document.getElementById('pwError').classList.add('show');
+      document.querySelectorAll('.pw-dot').forEach(d => { d.classList.add('shake'); setTimeout(()=>d.classList.remove('shake'),400); });
+      setTimeout(() => {
+        _pwInput = '';
+        renderPwDots();
+        document.getElementById('pwError').classList.remove('show');
+      }, 700);
+    }
+  }
+}
+
+document.addEventListener('keydown', e => {
+  const gate = document.getElementById('pwGate');
+  if(!gate.classList.contains('show')) return;
+  if(e.key >= '0' && e.key <= '9') pwKey(e.key);
+  if(e.key === 'Backspace') { _pwInput = _pwInput.slice(0,-1); renderPwDots(); document.getElementById('pwError').classList.remove('show'); }
+  if(e.key === 'Escape') closePwGate();
+});
+
+
+</script>
+
 <div id="pwGate">
   <div class="pw-box">
     <div class="pw-label">Edit Access</div>
