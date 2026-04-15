@@ -1838,8 +1838,16 @@ function handleFiles(files){
     const r=new FileReader();
     r.onload=async e=>{
       try {
-        const dataUrl=e.target.result;
-        // Strip data URL prefix to get pure base64
+        let dataUrl=e.target.result;
+        // Auto-compress images larger than 800KB
+        if(!isVid && dataUrl.length > 800*1024*1.37) {
+          // Try progressively lower quality until under 800KB
+          let maxSide=3000, q=0.88;
+          while(dataUrl.length > 800*1024*1.37 && q > 0.4) {
+            try{ dataUrl=await compressAboutPhotoDataUrl(dataUrl,maxSide,q); }catch(err){break;}
+            q-=0.08; maxSide=Math.round(maxSide*0.85);
+          }
+        }
         const b64=dataUrl.split(',')[1];
         const url=await uploadMediaToGitHub(file, b64);
         if(!url){ done++; return; }
