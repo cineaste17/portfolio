@@ -833,6 +833,14 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
         <div id="exp-campus-list"></div>
       </div>
 
+      <div class="exp-section">
+        <div class="exp-section-head">
+          <span class="exp-section-label">Exchange</span>
+          <button class="exp-add-btn" data-key="exchange">+ Add</button>
+        </div>
+        <div id="exp-exchange-list"></div>
+      </div>
+
     </div>
   </div>
   <div id="exp-edit-bar">
@@ -1931,6 +1939,9 @@ const EXP_DEFAULTS = {
   campus: [
     { id: 'c1', role: 'President', org: 'Design Society', period: '2022 – 2024', desc: 'Led a 60-member student design club. Organized workshops, critiques, and an annual design exhibition attended by 400+ people.' },
     { id: 'c2', role: 'Editor-in-Chief', org: 'Student Magazine', period: '2021 – 2023', desc: 'Oversaw editorial direction, art direction, and layout for a semesterly publication. Managed a team of 12 designers and writers.' }
+  ],
+  exchange: [
+    { id: 'e1', role: 'Exchange Student', org: 'University Name', period: 'Sep 2023 – Jan 2024', desc: 'Studied design and culture abroad. Coursework in interaction design and visual communication.' }
   ]
 };
 
@@ -1947,6 +1958,7 @@ let expSnapshot = null;
 function renderExp() {
   renderExpSection('internships', 'exp-intern-list');
   renderExpSection('campus', 'exp-campus-list');
+  renderExpSection('exchange', 'exp-exchange-list');
 }
 
 function renderExpSection(key, listId) {
@@ -2022,7 +2034,8 @@ document.addEventListener('click', e => {
   const key = e.target.dataset.key, idx = parseInt(e.target.dataset.idx);
   if(expData[key].length <= 1) { toast('Need at least 1 entry'); return; }
   expData[key].splice(idx, 1);
-  renderExpSection(key, key === 'internships' ? 'exp-intern-list' : 'exp-campus-list');
+  const _listMap = {internships:'exp-intern-list',campus:'exp-campus-list',exchange:'exp-exchange-list'};
+  renderExpSection(key, _listMap[key] || 'exp-intern-list');
 });
 
 // Add entry
@@ -2030,7 +2043,8 @@ document.addEventListener('click', e => {
   if(!e.target.classList.contains('exp-add-btn') && !e.target.closest('.exp-add-btn')) return;
   const btn = e.target.closest('.exp-add-btn') || e.target;
   const key = btn.dataset.key;
-  const listId = key === 'internships' ? 'exp-intern-list' : 'exp-campus-list';
+  const _lm = {internships:'exp-intern-list',campus:'exp-campus-list',exchange:'exp-exchange-list'};
+  const listId = _lm[key] || 'exp-intern-list';
   expData[key].push({ id: key[0]+Date.now(), role: 'Role / Position', org: 'Organisation', period: 'Year – Year', desc: 'Describe what you did, what you learned, and the impact you made.' });
   renderExpSection(key, listId);
   toast('Entry added');
@@ -2147,6 +2161,7 @@ function buildPortfolioHTML() {
   html = html.replace(/(<div class="ep-list" id="epList">)[\s\S]*?(<\/div>)/, '$1$2');
   html = html.replace(/(<div id="exp-intern-list">)[\s\S]*?(<\/div>)/, '$1$2');
   html = html.replace(/(<div id="exp-campus-list">)[\s\S]*?(<\/div>)/, '$1$2');
+  html = html.replace(/(<div id="exp-exchange-list">)[\s\S]*?(<\/div>)/, '$1$2');
   html = html.replace(/(<div class="pf-dots" id="dots">)[\s\S]*?(<\/div>)/, '$1$2');
   html = html.replace(/(<meta charset="UTF-8">)/, '$1\n' + dataMeta);
   return '<!DOCTYPE html>\n' + html;
