@@ -1823,13 +1823,31 @@ async function uploadMediaToGitHub(file, b64) {
   const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'X-GitHub-Api-Version': '2022-11-28' };
   const safeName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
   const path = `media/${safeName}`;
-  // Check if file exists (get sha)
-  let sha = '';
-  try { const r = await fetch(`${base}/contents/${path}`, {headers}); if(r.ok) sha = (await r.json()).sha; } catch(e) {}
-  const body = { message: 'media: upload ' + safeName, content: b64 };
-  if(sha) body.sha = sha;
-  const res = await fetch(`${base}/contents/${path}`, { method:'PUT', headers, body: JSON.stringify(body) });
-  if(!res.ok) { const t=await res.text(); throw new Error('upload ' + res.status + ': ' + t.slice(0,80)); }
+
+  // Use Git Data API (blob → tree → commit) — no size limit unlike Contents API
+  const blobRes = await fetch(`${base}/git/blobs`, { method:'POST', headers, body: JSON.stringify({content:b64, encoding:'base64'}) });
+  if(!blobRes.ok){ const t=await blobRes.text(); throw new Error('blob '+blobRes.status+': '+t.slice(0,80)); }
+  const {sha: blobSha} = await blobRes.json();
+
+  const refRes = await fetch(`${base}/git/refs/heads/main`, {headers});
+  if(!refRes.ok) throw new Error('ref '+refRes.status);
+  const {object:{sha:commitSha}} = await refRes.json();
+
+  const commitRes = await fetch(`${base}/git/commits/${commitSha}`, {headers});
+  if(!commitRes.ok) throw new Error('commit '+commitRes.status);
+  const {tree:{sha:treeSha}} = await commitRes.json();
+
+  const treeRes = await fetch(`${base}/git/trees`, { method:'POST', headers, body: JSON.stringify({base_tree:treeSha, tree:[{path, mode:'100644', type:'blob', sha:blobSha}]}) });
+  if(!treeRes.ok) throw new Error('tree '+treeRes.status);
+  const {sha:newTreeSha} = await treeRes.json();
+
+  const newCommitRes = await fetch(`${base}/git/commits`, { method:'POST', headers, body: JSON.stringify({message:'media: upload '+safeName, tree:newTreeSha, parents:[commitSha]}) });
+  if(!newCommitRes.ok) throw new Error('newcommit '+newCommitRes.status);
+  const {sha:newCommitSha} = await newCommitRes.json();
+
+  const patchRes = await fetch(`${base}/git/refs/heads/main`, { method:'PATCH', headers, body: JSON.stringify({sha:newCommitSha}) });
+  if(!patchRes.ok) throw new Error('patch '+patchRes.status);
+
   return `https://cineaste17.github.io/portfolio/${path}`;
 }
 
@@ -1837,17 +1855,16 @@ function handleFiles(files){
   if(editIdx<0)return;
   const arr=Array.from(files).filter(f=>f.type.startsWith('image/')||f.type.startsWith('video/'));
   if(!arr.length)return;
-  let done=0;
+  let done=0, failed=0;
   toast(`Uploading ${arr.length} file${arr.length>1?'s':''}…`);
   arr.forEach(file=>{
     const isVid=file.type.startsWith('video/');
     const r=new FileReader();
     r.onload=async e=>{
+      let ok=false;
       try {
         let dataUrl=e.target.result;
-        // Auto-compress images larger than 800KB
         if(!isVid && dataUrl.length > 800*1024*1.37) {
-          // Try progressively lower quality until under 800KB
           let maxSide=3000, q=0.88;
           while(dataUrl.length > 800*1024*1.37 && q > 0.4) {
             try{ dataUrl=await compressAboutPhotoDataUrl(dataUrl,maxSide,q); }catch(err){break;}
@@ -1856,17 +1873,23 @@ function handleFiles(files){
         }
         const b64=dataUrl.split(',')[1];
         const url=await uploadMediaToGitHub(file, b64);
-        if(!url){ done++; return; }
-        // Store both the GitHub URL and a local preview so it shows immediately
-        projects[editIdx].media.push({type:isVid?'video':'image',src:url,preview:dataUrl,name:file.name});
+        if(url){
+          projects[editIdx].media.push({type:isVid?'video':'image',src:url,preview:dataUrl,name:file.name});
+          ok=true;
+        }
       } catch(err) {
         toast('Upload failed: '+err.message);
+        failed++;
       }
       done++;
       if(done===arr.length){
-        try{ saveProjects(); }catch(err){ toast('Save failed'); return; }
-        renderMediaGrid();
-        toast(`Uploaded & saved`);
+        if(ok || projects[editIdx].media.length){
+          try{ saveProjects(); }catch(err){ toast('Save failed'); return; }
+          renderMediaGrid();
+          toast(failed ? `${done-failed} uploaded, ${failed} failed` : `Uploaded & saved`);
+        } else {
+          toast('Upload failed — check your GitHub token');
+        }
       }
     };
     r.readAsDataURL(file);
