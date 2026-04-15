@@ -1422,7 +1422,12 @@ const DEFAULTS=[
 ];
 function loadProjects(){try{const r=localStorage.getItem('pf_v3');if(r)return JSON.parse(r);}catch(e){}return DEFAULTS.map(p=>({...p,media:[]}));}
 function saveProjects(){
-  try{ localStorage.setItem('pf_v3',JSON.stringify(projects)); }
+  // Strip in-memory preview blobs before saving (they're only for immediate display)
+  const toSave = projects.map(p => ({
+    ...p,
+    media: (p.media||[]).map(m => { const {preview,...rest}=m; return rest; })
+  }));
+  try{ localStorage.setItem('pf_v3',JSON.stringify(toSave)); }
   catch(e){ toast('Storage full — try removing some images'); throw e; }
 }
 let projects=loadProjects();
