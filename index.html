@@ -1878,17 +1878,16 @@ function handleFiles(files){
           ok=true;
         }
       } catch(err) {
-        toast('Upload failed: '+err.message);
         failed++;
+        console.error('Upload error:', err);
+        if(done+1===arr.length) toast('Error: '+err.message);
       }
       done++;
       if(done===arr.length){
-        if(ok || projects[editIdx].media.length){
-          try{ saveProjects(); }catch(err){ toast('Save failed'); return; }
+        if(ok){
+          try{ saveProjects(); }catch(e){ toast('Save failed: '+e.message); return; }
           renderMediaGrid();
-          toast(failed ? `${done-failed} uploaded, ${failed} failed` : `Uploaded & saved`);
-        } else {
-          toast('Upload failed — check your GitHub token');
+          if(!failed) toast('Uploaded & saved');
         }
       }
     };
