@@ -1698,19 +1698,27 @@ document.addEventListener('keydown',e=>{
   const lb=document.getElementById('lightbox');
   const lbHasMulti=()=>(projects[lbPI]&&projects[lbPI].media||[]).length>1;
 
-  // Touch (real touchscreen)
-  let lbTX=0,lbTT=0;
-  lb.addEventListener('touchstart',e=>{lbTX=e.touches[0].clientX;lbTT=Date.now();},{passive:true});
+  // Touch (real touchscreen) — handles mobile swipe
+  let lbTX=0,lbTY=0,lbTT=0,lbTActive=false;
+  lb.addEventListener('touchstart',e=>{
+    lbTX=e.touches[0].clientX;lbTY=e.touches[0].clientY;lbTT=Date.now();lbTActive=true;
+  },{passive:true});
   lb.addEventListener('touchend',e=>{
+    if(!lbTActive)return;
+    lbTActive=false;
     if(!lbHasMulti())return;
     const dx=lbTX-e.changedTouches[0].clientX;
+    const dy=lbTY-e.changedTouches[0].clientY;
     const vel=Math.abs(dx)/(Date.now()-lbTT||1);
-    if(Math.abs(dx)>40||vel>0.3) lbGo(dx>0?1:-1);
-  });
+    // Only horizontal swipe (dx dominates dy)
+    if(Math.abs(dx)>Math.abs(dy)&&(Math.abs(dx)>30||vel>0.2)) lbGo(dx>0?1:-1);
+  },{passive:true});
+  lb.addEventListener('touchcancel',()=>{lbTActive=false;},{passive:true});
 
-  // Pointer drag (mouse or trackpad click-drag)
+  // Pointer drag (mouse or trackpad click-drag) — skip on touch devices
   let lbPX=0,lbPDown=false,lbPMoved=false;
   lb.addEventListener('pointerdown',e=>{
+    if(e.pointerType==='touch')return;  // handled by touch events above
     if(e.target===document.getElementById('lbClose'))return;
     if(e.target===document.getElementById('lbPrev'))return;
     if(e.target===document.getElementById('lbNext'))return;
@@ -1724,7 +1732,7 @@ document.addEventListener('keydown',e=>{
     if(!lbPDown)return;
     lbPDown=false;
     const dx=lbPX-e.clientX;
-    if(lbPMoved&&Math.abs(dx)>48&&lbHasMulti()) lbGo(dx>0?1:-1);
+    if(lbPMoved&&Math.abs(dx)>40&&lbHasMulti()) lbGo(dx>0?1:-1);
     lbPMoved=false;
   });
   lb.addEventListener('pointercancel',()=>{lbPDown=false;});
