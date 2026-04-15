@@ -1793,8 +1793,9 @@ function renderMediaGrid(){
   if(!media.length){grid.innerHTML='<div class="media-empty">No media yet — upload below</div>';return;}
   media.forEach((m,mi)=>{
     const item=document.createElement('div');item.className='media-item';
-    if(m.type==='video')item.innerHTML=`<video src="${m.src}" muted preload="metadata" style="width:100%;height:100%;object-fit:cover"></video><span class="media-item-type">VIDEO</span>`;
-    else item.innerHTML=`<img src="${m.src}" alt="" style="width:100%;height:100%;object-fit:cover"><span class="media-item-type">IMAGE</span>`;
+    const displaySrc=m.preview||m.src;
+    if(m.type==='video')item.innerHTML=`<video src="${displaySrc}" muted preload="metadata" style="width:100%;height:100%;object-fit:cover"></video><span class="media-item-type">VIDEO</span>`;
+    else item.innerHTML=`<img src="${displaySrc}" alt="" style="width:100%;height:100%;object-fit:cover"><span class="media-item-type">IMAGE</span>`;
     const del=document.createElement('div');del.className='media-item-del';del.textContent='×';
     del.addEventListener('click',e=>{e.stopPropagation();projects[editIdx].media.splice(mi,1);saveProjects();renderMediaGrid();toast('Removed');});
     item.appendChild(del);
@@ -1851,7 +1852,8 @@ function handleFiles(files){
         const b64=dataUrl.split(',')[1];
         const url=await uploadMediaToGitHub(file, b64);
         if(!url){ done++; return; }
-        projects[editIdx].media.push({type:isVid?'video':'image',src:url,name:file.name});
+        // Store both the GitHub URL and a local preview so it shows immediately
+        projects[editIdx].media.push({type:isVid?'video':'image',src:url,preview:dataUrl,name:file.name});
       } catch(err) {
         toast('Upload failed: '+err.message);
       }
