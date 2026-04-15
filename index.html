@@ -2179,8 +2179,23 @@ async function publishToGitHub() {
     const base = `https://api.github.com/repos/${GH_REPO}`;
     const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'X-GitHub-Api-Version': '2022-11-28' };
 
-    // 1. Build HTML and encode to base64 (chunked to avoid stack overflow)
-    const html = buildPortfolioHTML();
+    // 1. Fetch raw source from GitHub (avoids Cloudflare/DOM contamination)
+    const rawRes = await fetch(`https://raw.githubusercontent.com/${GH_REPO}/main/${GH_FILE}?_=${Date.now()}`);
+    if(!rawRes.ok) throw new Error('raw fetch ' + rawRes.status);
+    let html = await rawRes.text();
+
+    // Strip old _pf_data block and inject fresh data
+    const KEYS = ['pf_about_v1', 'pf_v3', 'pf_exp_v1', 'pf_font_v1'];
+    const stored = {};
+    KEYS.forEach(k => { const v = localStorage.getItem(k); if(v !== null) stored[k] = v; });
+    const dataScript =
+      `<script id="_pf_data">(function(){try{` +
+      `var d=${JSON.stringify(stored)};` +
+      `Object.keys(d).forEach(function(k){localStorage.setItem(k,d[k]);});` +
+      `}catch(e){}})();<\/script>`;
+    html = html.replace(/<script id="_pf_data">[\s\S]*?<\/script>\n?/g, '');
+    html = html.replace(/(<meta charset="UTF-8">)/, '$1\n' + dataScript);
+
     const bytes = new TextEncoder().encode(html);
     const chunks = [];
     for(let i = 0; i < bytes.length; i += 8192)
