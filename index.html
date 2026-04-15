@@ -1804,25 +1804,54 @@ function renderMediaGrid(){
     grid.appendChild(item);
   });
 }
+async function uploadMediaToGitHub(file, b64) {
+  let token = localStorage.getItem('pf_gh_token');
+  if(!token) {
+    token = prompt('GitHub Personal Access Token (needed to upload media):');
+    if(!token) return null;
+    token = token.trim();
+    localStorage.setItem('pf_gh_token', token);
+    updateTokenResetBtn();
+  }
+  const base = `https://api.github.com/repos/${GH_REPO}`;
+  const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'X-GitHub-Api-Version': '2022-11-28' };
+  const safeName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const path = `media/${safeName}`;
+  // Check if file exists (get sha)
+  let sha = '';
+  try { const r = await fetch(`${base}/contents/${path}`, {headers}); if(r.ok) sha = (await r.json()).sha; } catch(e) {}
+  const body = { message: 'media: upload ' + safeName, content: b64 };
+  if(sha) body.sha = sha;
+  const res = await fetch(`${base}/contents/${path}`, { method:'PUT', headers, body: JSON.stringify(body) });
+  if(!res.ok) { const t=await res.text(); throw new Error('upload ' + res.status + ': ' + t.slice(0,80)); }
+  return `https://cineaste17.github.io/portfolio/${path}`;
+}
+
 function handleFiles(files){
   if(editIdx<0)return;
-  let done=0;const arr=Array.from(files).filter(f=>f.type.startsWith('image/')||f.type.startsWith('video/'));
+  const arr=Array.from(files).filter(f=>f.type.startsWith('image/')||f.type.startsWith('video/'));
   if(!arr.length)return;
+  let done=0;
+  toast(`Uploading ${arr.length} file${arr.length>1?'s':''}…`);
   arr.forEach(file=>{
     const isVid=file.type.startsWith('video/');
     const r=new FileReader();
     r.onload=async e=>{
-      let src=e.target.result;
-      if(!isVid){
-        // Compress images to max 1600px, 0.82 quality to stay within localStorage limits
-        try{ src=await compressAboutPhotoDataUrl(src,1600,0.82); }catch(err){}
+      try {
+        const dataUrl=e.target.result;
+        // Strip data URL prefix to get pure base64
+        const b64=dataUrl.split(',')[1];
+        const url=await uploadMediaToGitHub(file, b64);
+        if(!url){ done++; return; }
+        projects[editIdx].media.push({type:isVid?'video':'image',src:url,name:file.name});
+      } catch(err) {
+        toast('Upload failed: '+err.message);
       }
-      projects[editIdx].media.push({type:isVid?'video':'image',src,name:file.name});
       done++;
       if(done===arr.length){
-        try{ saveProjects(); }catch(err){ toast('Save failed — files may be too large'); return; }
+        try{ saveProjects(); }catch(err){ toast('Save failed'); return; }
         renderMediaGrid();
-        toast(`Added ${done} file${done>1?'s':''}`);
+        toast(`Uploaded & saved`);
       }
     };
     r.readAsDataURL(file);
