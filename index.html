@@ -1421,7 +1421,10 @@ const DEFAULTS=[
   {title:"Motion Graphics Trilogy",category:"Motion",desc:"A series of three short films exploring typographic systems in motion. Premiered at the design film festival in Amsterdam.",year:"2022",role:"Motion Director",tags:["Motion","Typography","Film"],pattern:"circles",media:[]}
 ];
 function loadProjects(){try{const r=localStorage.getItem('pf_v3');if(r)return JSON.parse(r);}catch(e){}return DEFAULTS.map(p=>({...p,media:[]}));}
-function saveProjects(){localStorage.setItem('pf_v3',JSON.stringify(projects));}
+function saveProjects(){
+  try{ localStorage.setItem('pf_v3',JSON.stringify(projects)); }
+  catch(e){ toast('Storage full — try removing some images'); throw e; }
+}
 let projects=loadProjects();
 projects.forEach(p=>{if(!p.media)p.media=[];});
 let current=0,animating=false,editIdx=-1;
@@ -1803,14 +1806,26 @@ function renderMediaGrid(){
 }
 function handleFiles(files){
   if(editIdx<0)return;
-  let done=0;const arr=Array.from(files);
+  let done=0;const arr=Array.from(files).filter(f=>f.type.startsWith('image/')||f.type.startsWith('video/'));
+  if(!arr.length)return;
   arr.forEach(file=>{
-    if(!file.type.startsWith('image/')&&!file.type.startsWith('video/'))return;
-    const isVid=file.type.startsWith('video/');const r=new FileReader();
-    r.onload=e=>{
-      projects[editIdx].media.push({type:isVid?'video':'image',src:e.target.result,name:file.name});
-      done++;if(done===arr.length){saveProjects();renderMediaGrid();toast(`Added ${done} file${done>1?'s':''}`);}
-    };r.readAsDataURL(file);
+    const isVid=file.type.startsWith('video/');
+    const r=new FileReader();
+    r.onload=async e=>{
+      let src=e.target.result;
+      if(!isVid){
+        // Compress images to max 1600px, 0.82 quality to stay within localStorage limits
+        try{ src=await compressAboutPhotoDataUrl(src,1600,0.82); }catch(err){}
+      }
+      projects[editIdx].media.push({type:isVid?'video':'image',src,name:file.name});
+      done++;
+      if(done===arr.length){
+        try{ saveProjects(); }catch(err){ toast('Save failed — files may be too large'); return; }
+        renderMediaGrid();
+        toast(`Added ${done} file${done>1?'s':''}`);
+      }
+    };
+    r.readAsDataURL(file);
   });
 }
 document.getElementById('mediaInput').addEventListener('change',e=>handleFiles(e.target.files));
