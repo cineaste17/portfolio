@@ -1421,7 +1421,7 @@ const DEFAULTS=[
   {title:"Motion Graphics Trilogy",category:"Motion",desc:"A series of three short films exploring typographic systems in motion. Premiered at the design film festival in Amsterdam.",year:"2022",role:"Motion Director",tags:["Motion","Typography","Film"],pattern:"circles",media:[]}
 ];
 function loadProjects(){try{const r=localStorage.getItem('pf_v3');if(r)return JSON.parse(r);}catch(e){}return DEFAULTS.map(p=>({...p,media:[]}));}
-function saveProjects(){localStorage.setItem('pf_v3',JSON.stringify(projects));}
+function saveProjects(){localStorage.setItem('pf_v3',JSON.stringify(projects));publishToGitHub();}
 let projects=loadProjects();
 projects.forEach(p=>{if(!p.media)p.media=[];});
 let current=0,animating=false,editIdx=-1;
@@ -2274,8 +2274,7 @@ const _origAbSave = abSave;
 abSave = async function() { await _origAbSave.apply(this, arguments); publishToGitHub(); };
 const _origExpSave = expSave;
 expSave = function() { _origExpSave.apply(this, arguments); publishToGitHub(); };
-const _origSaveProjects = saveProjects;
-saveProjects = function() { _origSaveProjects.apply(this, arguments); publishToGitHub(); };
+// saveProjects already calls publishToGitHub internally
 
 document.getElementById('saveFileBtn').addEventListener('click', exportPortfolio);
 
