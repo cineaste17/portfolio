@@ -1421,7 +1421,7 @@ const DEFAULTS=[
   {title:"Motion Graphics Trilogy",category:"Motion",desc:"A series of three short films exploring typographic systems in motion. Premiered at the design film festival in Amsterdam.",year:"2022",role:"Motion Director",tags:["Motion","Typography","Film"],pattern:"circles",media:[]}
 ];
 function loadProjects(){try{const r=localStorage.getItem('pf_v3');if(r)return JSON.parse(r);}catch(e){}return DEFAULTS.map(p=>({...p,media:[]}));}
-function saveProjects(){localStorage.setItem('pf_v3',JSON.stringify(projects));publishToGitHub();}
+function saveProjects(){localStorage.setItem('pf_v3',JSON.stringify(projects));}
 let projects=loadProjects();
 projects.forEach(p=>{if(!p.media)p.media=[];});
 let current=0,animating=false,editIdx=-1;
@@ -1822,7 +1822,7 @@ document.getElementById('saveBtn').addEventListener('click',()=>{
   if(editIdx<0)return;
   const tags=document.getElementById('fTags').value.split(',').map(t=>t.trim()).filter(Boolean);
   projects[editIdx]={...projects[editIdx],title:document.getElementById('fTitle').value.trim(),category:document.getElementById('fCat').value.trim(),year:document.getElementById('fYear').value.trim(),role:document.getElementById('fRole').value.trim(),desc:document.getElementById('fDesc').value.trim(),tags,pattern:document.getElementById('fPattern').value};
-  saveProjects();document.getElementById('epFormTitle').textContent='Editing: '+(projects[editIdx].title||'Untitled');renderList();toast('Saved!');
+  saveProjects();publishToGitHub();document.getElementById('epFormTitle').textContent='Editing: '+(projects[editIdx].title||'Untitled');renderList();toast('Saved!');
 });
 document.getElementById('deleteBtn').addEventListener('click',()=>{
   if(editIdx<0)return;if(projects.length<=1){toast('Need at least 1 project');return;}
