@@ -1867,7 +1867,7 @@ function handleFiles(files){
         if(!isVid && dataUrl.length > 800*1024*1.37) {
           let maxSide=3000, q=0.88;
           while(dataUrl.length > 800*1024*1.37 && q > 0.4) {
-            try{ dataUrl=await compressAboutPhotoDataUrl(dataUrl,maxSide,q); }catch(err){break;}
+            try{ const r=await compressAboutPhotoDataUrl(dataUrl,maxSide,q); dataUrl=r.url; }catch(err){break;}
             q-=0.08; maxSide=Math.round(maxSide*0.85);
           }
         }
