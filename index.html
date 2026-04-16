@@ -1855,44 +1855,39 @@ function handleFiles(files){
   if(editIdx<0)return;
   const arr=Array.from(files).filter(f=>f.type.startsWith('image/')||f.type.startsWith('video/'));
   if(!arr.length)return;
-  let done=0, failed=0;
   toast(`Uploading ${arr.length} file${arr.length>1?'s':''}…`);
-  arr.forEach(file=>{
-    const isVid=file.type.startsWith('video/');
-    const r=new FileReader();
-    r.onload=async e=>{
-      let ok=false;
+  (async () => {
+    let uploaded=0;
+    for(const file of arr){
+      const isVid=file.type.startsWith('video/');
       try {
-        let dataUrl=e.target.result;
-        if(!isVid && dataUrl.length > 800*1024*1.37) {
+        const dataUrl = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(file); });
+        let finalUrl = dataUrl;
+        if(!isVid && finalUrl.length > 800*1024*1.37) {
           let maxSide=3000, q=0.88;
-          while(dataUrl.length > 800*1024*1.37 && q > 0.4) {
-            try{ const r=await compressAboutPhotoDataUrl(dataUrl,maxSide,q); dataUrl=r.url; }catch(err){break;}
+          while(finalUrl.length > 800*1024*1.37 && q > 0.4) {
+            try{ const r=await compressAboutPhotoDataUrl(finalUrl,maxSide,q); finalUrl=r.url; }catch(err){break;}
             q-=0.08; maxSide=Math.round(maxSide*0.85);
           }
         }
-        const b64=dataUrl.split(',')[1];
+        const b64=finalUrl.split(',')[1];
         const url=await uploadMediaToGitHub(file, b64);
         if(url){
-          projects[editIdx].media.push({type:isVid?'video':'image',src:url,preview:dataUrl,name:file.name});
-          ok=true;
+          projects[editIdx].media.push({type:isVid?'video':'image',src:url,preview:finalUrl,name:file.name});
+          uploaded++;
+          toast(`Uploading… ${uploaded}/${arr.length}`);
         }
       } catch(err) {
-        failed++;
         console.error('Upload error:', err);
-        if(done+1===arr.length) toast('Error: '+err.message);
+        toast('Error: '+err.message);
       }
-      done++;
-      if(done===arr.length){
-        if(ok){
-          try{ saveProjects(); }catch(e){ toast('Save failed: '+e.message); return; }
-          renderMediaGrid();
-          if(!failed) toast('Uploaded & saved');
-        }
-      }
-    };
-    r.readAsDataURL(file);
-  });
+    }
+    if(uploaded){
+      try{ saveProjects(); }catch(e){ toast('Save failed: '+e.message); return; }
+      renderMediaGrid();
+      toast(`Uploaded & saved (${uploaded}/${arr.length})`);
+    }
+  })();
 }
 document.getElementById('mediaInput').addEventListener('change',e=>handleFiles(e.target.files));
 const drop=document.getElementById('mediaDrop');
