@@ -2329,6 +2329,7 @@ async function publishToGitHub() {
 }
 
 function resetAllContent() {
+  if(!sessionStorage.getItem(PW_SESSION)){requirePassword(resetAllContent);return;}
   if(!confirm('清空所有内容，恢复默认？')) return;
   ['pf_about_v1','pf_v3','pf_exp_v1','pf_font_v1'].forEach(k => localStorage.removeItem(k));
   location.reload();
