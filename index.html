@@ -68,7 +68,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
   font-family:var(--font-display);font-weight:200;font-size:17px;
   letter-spacing:-.03em;cursor:pointer;user-select:none;color:var(--fg);
 }
-#g-nav{display:flex;gap:32px;}
+#g-nav{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:32px;}
 #g-nav a{
   font-family:var(--font-mono);font-size:9px;letter-spacing:.3em;
   color:var(--soft);text-transform:uppercase;text-decoration:none;cursor:pointer;
@@ -76,14 +76,6 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
 }
 #g-nav a:hover{color:var(--mid);}
 #g-nav a.on{color:var(--fg);}
-#g-actions{display:flex;gap:8px;min-width:130px;justify-content:flex-end;}
-.btn-sm{
-  font-family:var(--font-mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;
-  border:1px solid var(--border);color:var(--mid);background:transparent;
-  padding:6px 14px;cursor:pointer;transition:all .15s;
-}
-.btn-sm:hover{border-color:var(--fg);color:var(--fg);}
-
 /* ════════════════════════════
    CENTERED PAGE SHELL
    (shared by About, Experience)
@@ -130,48 +122,10 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
   width:var(--photo-w,240px);height:var(--photo-h,320px);
   min-width:100px;min-height:100px;max-width:480px;max-height:560px;
   overflow:hidden;background:var(--faint);border:1px solid var(--border);
-  cursor:pointer;flex-shrink:0;transition:border-color .2s;
+  flex-shrink:0;
 }
-.ab-photo-wrap:hover{border-color:var(--mid);}
 .ab-photo-inner{position:absolute;inset:0;overflow:hidden;z-index:1;}
 .ab-photo-inner img{position:absolute;display:block;left:0;top:0;width:auto;height:auto;max-width:none;max-height:none;user-select:none;-webkit-user-drag:none;}
-.ab-photo-empty{
-  position:absolute;inset:0;z-index:2;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
-  font-family:var(--font-mono);font-size:9px;letter-spacing:.25em;color:var(--soft);text-transform:uppercase;text-align:center;padding:20px;
-}
-.ab-photo-empty span{font-size:24px;color:var(--border);}
-.ab-photo-input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:3;}
-.ab-photo-drag-shield{position:absolute;inset:0;z-index:4;background:transparent;touch-action:none;display:none;}
-.ab-photo-wrap.ab-photo-edit-photo .ab-photo-drag-shield{display:block;cursor:grab;}
-.ab-photo-wrap.ab-photo-edit-photo:active .ab-photo-drag-shield{cursor:grabbing;}
-.ab-photo-actions{
-  position:absolute;bottom:8px;left:8px;z-index:5;display:none;
-  flex-direction:row;flex-wrap:wrap;gap:8px;align-items:center;max-width:calc(100% - 36px);
-}
-.ab-photo-replace,.ab-photo-reset{
-  font-family:var(--font-mono);font-size:8px;letter-spacing:.15em;text-transform:uppercase;
-  border:1px solid var(--border);background:rgba(255,255,255,.95);color:var(--fg);
-  padding:5px 10px;cursor:pointer;transition:border-color .15s,color .15s;
-}
-.ab-photo-replace:hover,.ab-photo-reset:hover{border-color:var(--fg);}
-.ab-size-hint{position:absolute;bottom:8px;right:8px;z-index:6;max-width:calc(100% - 36px);text-align:right;font-family:var(--font-mono);font-size:8px;letter-spacing:.08em;background:rgba(255,255,255,.9);padding:2px 6px;color:var(--soft);pointer-events:none;opacity:0;transition:opacity .2s;line-height:1.35;}
-.ab-photo-wrap:hover .ab-size-hint{opacity:1;}
-.ab-photo-wrap.ab-photo-edit-photo:hover .ab-size-hint{opacity:1;}
-/* 编辑时拖右下角调整相框大小 */
-.ab-photo-resize-handle{
-  position:absolute;right:0;bottom:0;width:32px;height:32px;z-index:12;
-  cursor:nwse-resize;display:none;touch-action:none;
-}
-.ab-photo-resize-handle::after{
-  content:'';
-  position:absolute;right:7px;bottom:7px;width:13px;height:13px;
-  border-right:1.5px solid var(--fg);border-bottom:1.5px solid var(--fg);
-  opacity:.42;pointer-events:none;
-}
-.ab-photo-wrap.ab-photo-editing .ab-photo-resize-handle{display:block;}
-.ab-photo-wrap.ab-photo-editing.ab-photo-resize-active .ab-photo-resize-handle{opacity:.9;}
-
 /* text column */
 .ab-text-col{
   height:100%;overflow-y:auto;
@@ -183,29 +137,12 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
 
 .ab-field{position:relative;margin-bottom:28px;}
 .ab-field:last-child{margin-bottom:0;}
-.ab-field-hint{font-family:var(--font-mono);font-size:8px;letter-spacing:.22em;color:var(--soft);text-transform:uppercase;position:absolute;top:-15px;left:0;opacity:0;transition:opacity .2s;pointer-events:none;}
-.ab-field.editing-mode .ab-field-hint{opacity:1;}
-.ab-field.editing-mode .ab-editable{outline:none;border-bottom:1px solid var(--border);padding-bottom:3px;}
-.ab-field.editing-mode .ab-editable:focus{border-color:var(--fg);}
-
 .ab-name{font-family:var(--font-display);font-weight:200;font-size:clamp(36px,4.5vw,64px);letter-spacing:-.04em;line-height:1.0;color:var(--fg);display:block;}
 .ab-role{font-family:var(--font-mono);font-size:10px;letter-spacing:.3em;color:var(--mid);text-transform:uppercase;display:block;}
 .ab-bio{font-size:14px;line-height:1.95;color:var(--mid);font-weight:300;display:block;max-width:480px;}
 .ab-detail-label{font-family:var(--font-mono);font-size:8px;letter-spacing:.3em;color:var(--soft);text-transform:uppercase;margin-bottom:5px;display:block;}
 .ab-detail-val{font-size:13px;color:var(--fg);display:block;line-height:1.6;font-weight:300;}
 .ab-divider{width:24px;height:1px;background:var(--border);margin:4px 0 24px;}
-
-/* edit bar (shared) */
-.edit-bar{
-  position:fixed;bottom:32px;left:50%;transform:translateX(-50%);
-  display:none;align-items:center;gap:6px;
-  background:var(--fg);padding:9px 16px;z-index:400;
-  box-shadow:0 4px 24px rgba(0,0,0,.12);
-}
-.edit-bar.show{display:flex;}
-.edit-bar-label{font-family:var(--font-mono);font-size:8px;letter-spacing:.25em;color:rgba(255,255,255,.4);text-transform:uppercase;padding-right:8px;}
-.edit-bar-btn{font-family:var(--font-mono);font-size:8px;letter-spacing:.15em;text-transform:uppercase;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.65);background:transparent;padding:5px 12px;cursor:pointer;transition:all .15s;}
-.edit-bar-btn:hover{border-color:#fff;color:#fff;}
 
 /* ════════════════════════════
    EXPERIENCE PAGE
@@ -224,9 +161,6 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
   border-bottom:1px solid var(--fg);
 }
 .exp-section-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.38em;color:var(--fg);text-transform:uppercase;}
-.exp-add-btn{display:none;align-items:center;gap:5px;font-family:var(--font-mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;border:none;color:var(--soft);background:transparent;padding:4px 0;cursor:pointer;transition:color .15s;}
-.exp-add-btn:hover{color:var(--fg);}
-
 .exp-row{
   display:grid;grid-template-columns:148px 1fr;
   padding:36px 0;border-bottom:1px solid var(--border);
@@ -239,18 +173,6 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
 .exp-role{font-family:var(--font-display);font-size:16px;font-weight:500;letter-spacing:-.02em;color:var(--fg);line-height:1.2;margin-bottom:5px;}
 .exp-org{font-family:var(--font-mono);font-size:9px;letter-spacing:.25em;color:var(--mid);text-transform:uppercase;margin-bottom:12px;}
 .exp-desc{font-size:13px;line-height:1.9;color:var(--mid);font-weight:300;max-width:500px;}
-
-.exp-editable:focus{outline:none;}
-.exp-editable[contenteditable="true"]{border-bottom:1px dashed var(--border);padding-bottom:1px;}
-.exp-editable[contenteditable="true"]:focus{border-color:var(--fg);}
-.exp-del-btn{position:absolute;top:36px;right:0;font-family:var(--font-mono);font-size:8px;letter-spacing:.15em;text-transform:uppercase;border:none;color:var(--border);background:transparent;padding:0;cursor:pointer;transition:color .15s;}
-.exp-del-btn:hover{color:#c00;}
-
-#exp-edit-bar{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);display:none;align-items:center;gap:6px;background:var(--fg);padding:9px 16px;z-index:400;box-shadow:0 4px 24px rgba(0,0,0,.12);}
-#exp-edit-bar.show{display:flex;}
-#exp-edit-bar span{font-family:var(--font-mono);font-size:8px;letter-spacing:.25em;color:rgba(255,255,255,.4);text-transform:uppercase;padding-right:8px;}
-.exp-bar-btn{font-family:var(--font-mono);font-size:8px;letter-spacing:.15em;text-transform:uppercase;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.65);background:transparent;padding:5px 12px;cursor:pointer;transition:all .15s;}
-.exp-bar-btn:hover{border-color:#fff;color:#fff;}
 
 /* ════════════════════════════
    PORTFOLIO (WORK)
@@ -317,58 +239,6 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
 .dot.active{background:var(--fg);height:12px;}
 
 /* ════════════════════════════
-   EDIT PANEL (projects)
-════════════════════════════ */
-#editPanel{position:fixed;inset:0;z-index:300;background:rgba(255,255,255,.98);display:none;flex-direction:column;}
-#editPanel.open{display:flex;}
-.ep-topbar{height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.ep-topbar-title{font-size:13px;font-weight:600;letter-spacing:-.02em;}
-.btn{font-family:var(--font-mono);font-size:8px;letter-spacing:.2em;text-transform:uppercase;border:1px solid var(--bdk);background:transparent;color:var(--fg);padding:6px 14px;cursor:pointer;transition:all .15s;}
-.btn:hover{background:var(--fg);color:var(--bg);}
-.btn.primary{background:var(--fg);color:var(--bg);}
-.btn.primary:hover{background:#333;}
-.btn.danger{border-color:#c00;color:#c00;}
-.btn.danger:hover{background:#c00;color:var(--bg);}
-.ep-body{display:flex;flex:1;overflow:hidden;}
-.ep-sidebar{width:240px;min-width:240px;border-right:1px solid var(--border);display:flex;flex-direction:column;}
-.ep-sidebar-head{padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--faint);}
-.ep-sidebar-label{font-family:var(--font-mono);font-size:8px;letter-spacing:.3em;color:var(--soft);text-transform:uppercase;}
-.btn-add{font-family:var(--font-mono);font-size:8px;letter-spacing:.15em;text-transform:uppercase;border:1px solid var(--bdk);background:transparent;color:var(--fg);padding:5px 11px;cursor:pointer;transition:all .15s;}
-.btn-add:hover{background:var(--fg);color:var(--bg);}
-.ep-list{flex:1;overflow-y:auto;}
-.ep-item{padding:12px 20px;cursor:pointer;border-bottom:1px solid var(--faint);display:flex;align-items:center;justify-content:space-between;transition:background .1s;}
-.ep-item:hover{background:var(--faint);}
-.ep-item.active{background:var(--fg);color:var(--bg);}
-.ep-item.active .ep-item-num{color:rgba(255,255,255,.3);}
-.ep-item-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:148px;}
-.ep-item-num{font-family:var(--font-mono);font-size:8px;color:var(--soft);flex-shrink:0;}
-.ep-form-area{flex:1;overflow-y:auto;padding:32px 44px;}
-.ep-form-area h2{font-size:17px;font-weight:600;letter-spacing:-.03em;margin-bottom:24px;}
-.form-row{margin-bottom:18px;}
-.form-label{font-family:var(--font-mono);font-size:8px;letter-spacing:.25em;color:var(--mid);text-transform:uppercase;display:block;margin-bottom:6px;}
-.form-input,.form-textarea,.form-select{width:100%;font-family:var(--font-body);font-size:13px;border:1px solid var(--border);background:var(--bg);color:var(--fg);padding:9px 12px;outline:none;transition:border-color .15s;appearance:none;}
-.form-input:focus,.form-textarea:focus,.form-select:focus{border-color:var(--fg);}
-.form-textarea{resize:vertical;min-height:76px;line-height:1.65;}
-.form-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23aaa'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer;}
-.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
-.form-hint{font-family:var(--font-mono);font-size:8px;color:var(--soft);margin-top:4px;display:block;}
-.form-actions{display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:20px;border-top:1px solid var(--faint);}
-.media-section{margin-top:4px;}
-.media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:7px;margin-bottom:10px;}
-.media-item{position:relative;aspect-ratio:16/10;background:var(--faint);border:1px solid var(--border);overflow:hidden;}
-.media-item img,.media-item video{width:100%;height:100%;object-fit:cover;display:block;}
-.media-item-del{position:absolute;top:4px;right:4px;width:18px;height:18px;background:rgba(255,255,255,.92);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:9px;color:#c00;line-height:1;transition:background .15s;}
-.media-item-del:hover{background:#c00;color:#fff;}
-.media-item-type{position:absolute;bottom:3px;left:3px;font-family:var(--font-mono);font-size:7px;letter-spacing:.08em;background:rgba(255,255,255,.85);padding:1px 4px;color:var(--mid);}
-.media-drop{border:1px dashed var(--soft);padding:20px;text-align:center;cursor:pointer;transition:all .15s;position:relative;}
-.media-drop:hover,.media-drop.dragover{border-color:var(--fg);background:var(--faint);}
-.media-drop-label{font-family:var(--font-mono);font-size:9px;letter-spacing:.18em;color:var(--mid);text-transform:uppercase;display:block;margin-bottom:4px;}
-.media-drop-sub{font-size:10px;color:var(--soft);}
-.media-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
-.media-empty{font-family:var(--font-mono);font-size:9px;color:var(--soft);letter-spacing:.12em;text-align:center;padding:14px 0;}
-.ep-empty{display:flex;align-items:center;justify-content:center;height:100%;font-family:var(--font-mono);font-size:10px;letter-spacing:.2em;color:var(--soft);}
-
-/* ════════════════════════════
    LIGHTBOX
 ════════════════════════════ */
 #lightbox{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0);display:none;align-items:center;justify-content:center;transition:background .3s ease;}
@@ -387,113 +257,16 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
 .lb-counter{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:9px;letter-spacing:.25em;color:rgba(255,255,255,.3);pointer-events:none;}
 .lb-title{position:fixed;bottom:48px;left:50%;transform:translateX(-50%);font-family:var(--font-mono);font-size:8px;letter-spacing:.28em;color:rgba(255,255,255,.25);text-transform:uppercase;pointer-events:none;white-space:nowrap;}
 
-/* ════════════════════════════
-   FONT PICKER
-════════════════════════════ */
-#fontBtn{position:fixed;bottom:26px;right:26px;z-index:400;width:34px;height:34px;border:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:var(--font-mono);font-size:8px;letter-spacing:.05em;color:var(--soft);transition:all .15s;user-select:none;}
-#fontBtn:hover{border-color:var(--fg);color:var(--fg);}
-#fontPanel{position:fixed;bottom:68px;right:26px;z-index:400;background:var(--bg);border:1px solid var(--border);width:220px;display:none;flex-direction:column;box-shadow:0 6px 28px rgba(0,0,0,.06);}
-#fontPanel.open{display:flex;}
-.fp-head{padding:12px 16px 9px;border-bottom:1px solid var(--faint);font-family:var(--font-mono);font-size:8px;letter-spacing:.3em;color:var(--soft);text-transform:uppercase;}
-.fp-list{display:flex;flex-direction:column;}
-.fp-item{padding:11px 16px;cursor:pointer;border-bottom:1px solid var(--faint);display:flex;flex-direction:column;gap:2px;transition:background .1s;}
-.fp-item:last-child{border-bottom:none;}
-.fp-item:hover{background:var(--faint);}
-.fp-item.active{background:var(--fg);}
-.fp-item.active .fp-name{color:var(--bg);}
-.fp-item.active .fp-sample{color:rgba(255,255,255,.4);}
-.fp-name{font-size:10px;font-weight:500;color:var(--fg);font-family:var(--font-mono);letter-spacing:.08em;}
-.fp-sample{font-size:16px;color:var(--mid);line-height:1.1;font-weight:300;}
-
-/* ════════════════════════════
-   TOAST
-════════════════════════════ */
-#toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(6px);background:var(--fg);color:var(--bg);font-family:var(--font-mono);font-size:9px;letter-spacing:.2em;padding:9px 20px;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;z-index:999;}
-
-/* ── PASSWORD GATE ── */
-#pwGate{
-  position:fixed;inset:0;z-index:800;
-  background:rgba(255,255,255,0);
-  backdrop-filter:blur(0px);-webkit-backdrop-filter:blur(0px);
-  display:none;align-items:center;justify-content:center;
-  transition:background .35s,backdrop-filter .35s,-webkit-backdrop-filter .35s;
-}
-#pwGate.show{display:flex;}
-#pwGate.ready{background:rgba(255,255,255,.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
-.pw-box{
-  display:flex;flex-direction:column;align-items:center;gap:28px;
-  opacity:0;transform:translateY(16px);
-  transition:opacity .5s cubic-bezier(.22,1,.36,1),transform .5s cubic-bezier(.22,1,.36,1);
-}
-#pwGate.ready .pw-box{opacity:1;transform:translateY(0);}
-.pw-label{font-family:var(--font-mono);font-size:8px;letter-spacing:.42em;color:var(--soft);text-transform:uppercase;}
-.pw-dots{display:flex;gap:14px;align-items:center;}
-.pw-dot{
-  width:7px;height:7px;border-radius:50%;
-  background:transparent;border:1px solid var(--border);
-  transition:background .18s,border-color .18s,transform .18s cubic-bezier(.16,1,.3,1);
-}
-.pw-dot.filled{background:var(--fg);border-color:var(--fg);transform:scale(1.15);}
-.pw-dot.shake{animation:pwShake .35s ease;}
-.pw-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);overflow:hidden;}
-.pw-key{
-  width:64px;height:52px;
-  font-family:var(--font-display);font-size:16px;font-weight:300;
-  color:var(--fg);background:var(--bg);border:none;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  transition:background .12s;user-select:none;
-  -webkit-tap-highlight-color:transparent;
-}
-.pw-key:active{background:var(--faint);}
-.pw-key.del{font-size:13px;color:var(--mid);}
-.pw-key.cls{font-size:10px;letter-spacing:.1em;font-family:var(--font-mono);color:var(--soft);}
-.pw-error{font-family:var(--font-mono);font-size:8px;letter-spacing:.25em;color:#c00;opacity:0;transition:opacity .2s;text-transform:uppercase;height:12px;}
-.pw-error.show{opacity:1;}
-@keyframes pwShake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
 /* ── SMOOTH INTERACTIONS ── */
-.btn-sm{transition:border-color .15s,color .15s,transform .07s,opacity .1s;}
-.btn-sm:active{transform:scale(.94);opacity:.7;}
-.btn{transition:all .15s,transform .07s;}
-.btn:active{transform:scale(.94);}
-.edit-bar-btn,.exp-bar-btn{transition:all .15s,transform .07s;}
-.edit-bar-btn:active,.exp-bar-btn:active{transform:scale(.93);opacity:.75;}
 .scroll-btn{transition:color .15s,transform .09s;}
 .scroll-btn:active{transform:scale(.84);}
 .dot{transition:background .25s cubic-bezier(.16,1,.3,1),height .3s cubic-bezier(.16,1,.3,1);}
-.btn-add{transition:all .15s,transform .07s;}
-.btn-add:active{transform:scale(.93);}
 #g-nav a{transition:color .15s,transform .07s;}
 #g-nav a:active{transform:scale(.93);}
-
-/* ── MEDIA ITEM CROP ICON ── */
-.media-item-crop{position:absolute;bottom:4px;right:26px;width:20px;height:20px;background:rgba(255,255,255,.94);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:10px;color:var(--mid);opacity:0;transition:opacity .15s,border-color .1s;z-index:3;line-height:1;}
-.media-item:hover .media-item-crop{opacity:1;}
-.media-item-crop:hover{border-color:var(--fg);color:var(--fg);}
-
-/* ── CROP MODAL ── */
-#cropModal{position:fixed;inset:0;z-index:700;background:rgba(0,0,0,0);display:none;align-items:center;justify-content:center;transition:background .28s ease;}
-#cropModal.open{display:flex;}
-#cropModal.ready{background:rgba(0,0,0,.88);}
-.crop-box{background:var(--bg);width:min(660px,94vw);display:flex;flex-direction:column;opacity:0;transform:scale(.96) translateY(8px);transition:opacity .26s ease,transform .3s cubic-bezier(.16,1,.3,1);}
-#cropModal.ready .crop-box{opacity:1;transform:scale(1) translateY(0);}
-.crop-header{padding:13px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.crop-title{font-family:var(--font-mono);font-size:8px;letter-spacing:.32em;text-transform:uppercase;color:var(--soft);}
-.crop-header-btns{display:flex;gap:6px;}
-.crop-stage{height:min(360px,50vw);overflow:hidden;position:relative;background:#f0f0f0;cursor:grab;flex-shrink:0;touch-action:none;}
-.crop-stage.dragging{cursor:grabbing;}
-.crop-stage-img{position:absolute;user-select:none;-webkit-user-drag:none;pointer-events:none;display:block;transform-origin:0 0;}
-.crop-footer{padding:11px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:14px;flex-shrink:0;}
-.crop-zoom-label{font-family:var(--font-mono);font-size:8px;letter-spacing:.2em;color:var(--soft);text-transform:uppercase;white-space:nowrap;}
-.crop-zoom-range{flex:1;-webkit-appearance:none;appearance:none;height:2px;background:var(--border);outline:none;cursor:pointer;border-radius:1px;}
-.crop-zoom-range::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;background:var(--fg);border-radius:50%;cursor:pointer;}
-.crop-hint-txt{font-family:var(--font-mono);font-size:8px;color:var(--soft);letter-spacing:.06em;white-space:nowrap;}
 
 /* ════════════════════════════
    MOBILE NAV MENU
 ════════════════════════════ */
-#g-mobile-edit{display:none;}
 #g-hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:32px;height:32px;cursor:pointer;padding:4px;flex-shrink:0;}
 #g-hamburger span{display:block;width:20px;height:1px;background:var(--fg);transition:all .25s cubic-bezier(.16,1,.3,1);}
 #g-hamburger.open span:nth-child(1){transform:translateY(6px) rotate(45deg);}
@@ -515,18 +288,6 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
 .g-mobile-link:last-child{border-bottom:none;}
 .g-mobile-link:active{color:var(--mid);transform:scale(.97);}
 .g-mobile-link{transition:color .15s,transform .12s cubic-bezier(.16,1,.3,1);}
-/* mobile nav bottom actions row */
-.g-mobile-actions{display:flex;align-items:center;gap:12px;margin-top:36px;}
-.g-mobile-save,.g-mobile-action-edit{
-  font-family:var(--font-mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;
-  color:var(--soft);cursor:pointer;border:1px solid var(--border);padding:9px 18px;
-  transition:all .2s;
-}
-.g-mobile-save:active,.g-mobile-action-edit:active{border-color:var(--fg);color:var(--fg);}
-.g-mobile-action-edit:empty{display:none;}
-.g-mobile-token-reset{font-family:var(--font-mono);font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--soft);cursor:pointer;margin-top:16px;padding:4px 0;opacity:.5;transition:opacity .2s;}
-.g-mobile-token-reset:active{opacity:1;}
-
 /* Work page mobile info bar */
 #pf-mobile-bar{
   display:none;
@@ -548,7 +309,6 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
   /* Topbar */
   #g-topbar{ padding:0 16px; }
   #g-nav{ display:none; }
-  #g-actions{ display:none; }
   #g-hamburger{ display:flex; }
 
   /* Landing */
@@ -588,66 +348,11 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
   .exp-page-title{ margin-bottom:48px; }
   .exp-row{ grid-template-columns:1fr;gap:4px 0;padding:28px 0; }
   .exp-period{ padding-top:0;margin-bottom:8px; }
-  .exp-del-btn{ top:28px; }
 
   /* ── Touch targets ── */
   .g-mobile-link{ padding:20px 0; }
-  .edit-bar-btn,.exp-bar-btn{ padding:10px 18px; }
-  .btn-sm{ padding:8px 14px; }
   .scroll-btn{ width:44px;height:44px; }
 
-  /* ── Edit bars ── */
-  .edit-bar,#exp-edit-bar{ bottom:20px;padding:11px 16px; }
-
-  /* ── Crop modal ── */
-  .crop-stage{ height:min(280px,62vw); }
-  .crop-hint-txt{ display:none; }
-
-  /* (mobile edit moved into nav menu) */
-
-  /* ── Edit panel — mobile stacked layout ── */
-  .ep-topbar{ padding:0 16px; }
-  .ep-body{ flex-direction:column; }
-  .ep-sidebar{
-    width:100%;min-width:0;border-right:none;
-    border-bottom:1px solid var(--border);
-    flex-direction:row;align-items:center;
-    max-height:52px;flex-shrink:0;
-  }
-  .ep-sidebar-head{
-    padding:0 16px;border-bottom:none;
-    height:52px;flex:none;
-  }
-  .ep-list{
-    display:flex;flex-direction:row;
-    overflow-x:auto;overflow-y:hidden;
-    -webkit-overflow-scrolling:touch;
-    flex:1;
-  }
-  .ep-item{
-    padding:0 16px;border-bottom:none;border-right:1px solid var(--faint);
-    height:52px;flex-shrink:0;min-width:fit-content;
-    white-space:nowrap;
-  }
-  .ep-item-num{ display:none; }
-  .ep-form-area{ padding:20px 18px 80px; }
-  .ep-form-area h2{ font-size:15px;margin-bottom:18px; }
-  .form-row{ margin-bottom:14px; }
-  .form-row-2{ grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px; }
-  /* iOS font-size≥16px prevents auto-zoom on focus */
-  .form-input,.form-textarea,.form-select{
-    font-size:16px;padding:12px 14px;
-  }
-  .form-textarea{ min-height:96px; }
-  .form-label{ font-size:9px;margin-bottom:8px; }
-  .form-actions{ flex-wrap:wrap;gap:8px; }
-  .form-actions .btn{ padding:10px 20px;font-size:9px;flex:1;text-align:center; }
-  /* media grid larger on mobile */
-  .media-grid{ grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px; }
-  .media-item-del{ width:24px;height:24px;font-size:11px; }
-  .media-drop{ padding:24px 16px; }
-  .media-drop-label{ font-size:10px; }
-  .btn-add{ padding:7px 14px;font-size:9px; }
   /* disable glow on touch */
   #cursor-glow{ display:none!important; }
 }
@@ -692,14 +397,6 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
     <a id="nav-work"  onclick="goScreen('s-portfolio')">Work</a>
     <a id="nav-exp"   onclick="goScreen('s-experience')">Experience</a>
   </nav>
-  <div id="g-actions">
-    <button class="btn-sm" id="abEditToggle" style="display:none">Edit Page</button>
-    <button class="btn-sm" id="openEditBtn"  style="display:none">Edit Projects</button>
-    <button class="btn-sm" id="expEditToggle" style="display:none">Edit Page</button>
-    <button class="btn-sm" id="saveFileBtn" title="Export as standalone HTML file">↓ Save File</button>
-    <button class="btn-sm" id="desktopTokenReset" onclick="resetGhToken()" title="Clear stored GitHub token" style="display:none;font-size:8px;opacity:.5;">↺ Token</button>
-    <button class="btn-sm" onclick="resetAllContent()" title="Reset all content to defaults" style="font-size:8px;opacity:.4;">↺ Reset</button>
-  </div>
   <div id="g-hamburger" onclick="toggleMobileNav()" aria-label="Menu">
     <span></span><span></span><span></span>
   </div>
@@ -708,17 +405,11 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
   <div class="g-mobile-link" onclick="goScreen('s-about');closeMobileNav()">About</div>
   <div class="g-mobile-link" onclick="goScreen('s-portfolio');closeMobileNav()">Work</div>
   <div class="g-mobile-link" onclick="goScreen('s-experience');closeMobileNav()">Experience</div>
-  <div class="g-mobile-actions">
-    <div class="g-mobile-action-edit" id="mobileEditBtn" onclick="closeMobileNav()"></div>
-    <div class="g-mobile-save" id="mobileSaveBtn">↓ Save</div>
-  </div>
-  <div class="g-mobile-token-reset" id="mobileTokenReset" onclick="resetGhToken()" style="display:none">Reset GitHub Token</div>
-  <div class="g-mobile-token-reset" onclick="resetAllContent()" style="margin-top:6px">Reset All Content</div>
 </div>
 
 <div id="s-landing" class="screen">
   <div class="l-word">Portfolio</div>
-  <div class="l-enter">Enter</div>
+  <div class="l-enter" role="status">Enter</div>
 </div>
 
 <div id="s-about" class="screen">
@@ -727,56 +418,36 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
     <div class="ab-photo-col" id="abPhotoCol">
       <div class="ab-photo-wrap" id="abPhotoWrap">
         <div class="ab-photo-inner" id="abPhotoInner">
-          <img id="abPhotoImg" src="" alt="" style="display:none">
+          <img id="abPhotoImg" alt="" style="display:none">
         </div>
-        <div class="ab-photo-empty" id="abPhotoEmpty">
-          <span>+</span>
-          <div>Upload Photo</div>
-        </div>
-        <div class="ab-photo-drag-shield" id="abPhotoDragShield"></div>
-        <div class="ab-photo-resize-handle" id="abPhotoResizeHandle" title="拖动调整相框大小"></div>
-        <div class="ab-photo-actions" id="abPhotoActions">
-          <button type="button" class="ab-photo-replace" id="abPhotoReplace">更换照片</button>
-          <button type="button" class="ab-photo-reset" id="abPhotoReset">重置排版</button>
-        </div>
-        <div class="ab-size-hint" id="abSizeHint">点击上传照片</div>
-        <input type="file" class="ab-photo-input" id="abPhotoInput" accept="image/*">
       </div>
     </div>
 
     <div class="ab-text-col" id="abTextCol">
       <div class="ab-field ab-enter-item" id="fieldName">
-        <div class="ab-field-hint">Name</div>
-        <span class="ab-name ab-editable" id="abName" spellcheck="false">Your Name</span>
+        <span class="ab-name" id="abName"></span>
       </div>
       <div class="ab-field ab-enter-item" id="fieldRole" style="margin-bottom:24px">
-        <div class="ab-field-hint">Title / Role</div>
-        <span class="ab-role ab-editable" id="abRole" spellcheck="false">Designer &amp; Creative Director</span>
+        <span class="ab-role" id="abRole"></span>
       </div>
       <div class="ab-divider ab-enter-item"></div>
       <div class="ab-field ab-enter-item" id="fieldBio">
-        <div class="ab-field-hint">Bio</div>
-        <span class="ab-bio ab-editable" id="abBio" spellcheck="false">Write a short introduction about yourself here. Share your background, what drives your creative work, and the kind of projects you care about most.</span>
+        <span class="ab-bio" id="abBio"></span>
       </div>
       <div class="ab-field ab-enter-item" id="fieldDetail1">
-        <span class="ab-detail-label ab-editable" id="abLabel1" spellcheck="false">Based in</span>
-        <span class="ab-detail-val ab-editable" id="abVal1" spellcheck="false">City, Country</span>
+        <span class="ab-detail-label" id="abLabel1"></span>
+        <span class="ab-detail-val" id="abVal1"></span>
       </div>
       <div class="ab-field ab-enter-item" id="fieldDetail2">
-        <span class="ab-detail-label ab-editable" id="abLabel2" spellcheck="false">Disciplines</span>
-        <span class="ab-detail-val ab-editable" id="abVal2" spellcheck="false">Brand Identity · Art Direction · Motion · Digital</span>
+        <span class="ab-detail-label" id="abLabel2"></span>
+        <span class="ab-detail-val" id="abVal2"></span>
       </div>
       <div class="ab-field ab-enter-item" id="fieldDetail3">
-        <span class="ab-detail-label ab-editable" id="abLabel3" spellcheck="false">Contact</span>
-        <span class="ab-detail-val ab-editable" id="abVal3" spellcheck="false"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b9d1dcd5d5d6f9c0d6cccbd7d8d4dc97dad6d4">[email&#160;protected]</a></span>
+        <span class="ab-detail-label" id="abLabel3"></span>
+        <span class="ab-detail-val" id="abVal3"></span>
       </div>
     </div>
     </div></div>
-  <div id="ab-edit-bar" class="edit-bar">
-    <span class="edit-bar-label">Editing</span>
-    <button class="edit-bar-btn" onclick="abSave()">Save</button>
-    <button class="edit-bar-btn" onclick="abCancel()">Cancel</button>
-  </div>
 </div>
 
 <div id="s-portfolio" class="screen">
@@ -820,7 +491,6 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
       <div class="exp-section">
         <div class="exp-section-head">
           <span class="exp-section-label">Internship &amp; Work</span>
-          <button class="exp-add-btn" data-key="internships">+ Add</button>
         </div>
         <div id="exp-intern-list"></div>
       </div>
@@ -828,7 +498,6 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
       <div class="exp-section">
         <div class="exp-section-head">
           <span class="exp-section-label">Campus &amp; Activities</span>
-          <button class="exp-add-btn" data-key="campus">+ Add</button>
         </div>
         <div id="exp-campus-list"></div>
       </div>
@@ -836,65 +505,10 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
       <div class="exp-section">
         <div class="exp-section-head">
           <span class="exp-section-label">Exchange</span>
-          <button class="exp-add-btn" data-key="exchange">+ Add</button>
         </div>
         <div id="exp-exchange-list"></div>
       </div>
 
-    </div>
-  </div>
-  <div id="exp-edit-bar">
-    <span>Editing</span>
-    <button class="exp-bar-btn" onclick="expSave()">Save</button>
-    <button class="exp-bar-btn" onclick="expCancel()">Cancel</button>
-  </div>
-</div>
-
-<div id="editPanel">
-  <div class="ep-topbar">
-    <div class="ep-topbar-title">Edit Projects</div>
-    <button class="btn" id="closeEditBtn">Close</button>
-  </div>
-  <div class="ep-body">
-    <div class="ep-sidebar">
-      <div class="ep-sidebar-head">
-        <span class="ep-sidebar-label">Projects</span>
-        <button class="btn-add" id="addBtn">+ Add</button>
-      </div>
-      <div class="ep-list" id="epList"></div>
-    </div>
-    <div class="ep-form-area" id="epFormArea">
-      <div class="ep-empty" id="epEmpty">Select a project to edit</div>
-      <div id="epForm" style="display:none">
-        <h2 id="epFormTitle">Edit Project</h2>
-        <div class="form-row"><label class="form-label">Project Title</label><input class="form-input" id="fTitle" placeholder="e.g. Brand Identity System"></div>
-        <div class="form-row-2">
-          <div><label class="form-label">Category</label><input class="form-input" id="fCat" placeholder="e.g. Branding"></div>
-          <div><label class="form-label">Year</label><input class="form-input" id="fYear" placeholder="e.g. 2024"></div>
-        </div>
-        <div class="form-row"><label class="form-label">Your Role</label><input class="form-input" id="fRole" placeholder="e.g. Creative Director"></div>
-        <div class="form-row"><label class="form-label">Description</label><textarea class="form-textarea" id="fDesc" placeholder="Brief description..."></textarea></div>
-        <div class="form-row"><label class="form-label">Tags</label><input class="form-input" id="fTags" placeholder="Branding, Print, Strategy"><span class="form-hint">Separate with commas</span></div>
-        <div class="form-row"><label class="form-label">Card Pattern (when no media)</label>
-          <select class="form-select" id="fPattern">
-            <option value="grid">Grid</option><option value="lines">Lines</option>
-            <option value="dots">Dots</option><option value="cross">Cross</option><option value="circles">Circles</option>
-          </select>
-        </div>
-        <div class="media-section">
-          <div style="margin-bottom:10px"><label class="form-label" style="margin:0">Media — Photos &amp; Videos</label></div>
-          <div class="media-grid" id="mediaGrid"><div class="media-empty">No media yet</div></div>
-          <div class="media-drop" id="mediaDrop">
-            <span class="media-drop-label">Drop here or click to upload</span>
-            <span class="media-drop-sub">JPG PNG GIF WebP MP4 WebM MOV</span>
-            <input type="file" id="mediaInput" multiple accept="image/*,video/*">
-          </div>
-        </div>
-        <div class="form-actions">
-          <button class="btn danger" id="deleteBtn">Delete Project</button>
-          <button class="btn primary" id="saveBtn">Save Changes</button>
-        </div>
-      </div>
     </div>
   </div>
 </div>
@@ -911,33 +525,7 @@ html,body{width:100%;height:100%;background:var(--bg);color:var(--fg);overflow:h
   <div class="lb-counter" id="lbCounter"></div>
 </div>
 
-<div id="toast"></div>
-
-<div id="cropModal">
-  <div class="crop-box">
-    <div class="crop-header">
-      <span class="crop-title">Crop &amp; Position</span>
-      <div class="crop-header-btns">
-        <button class="btn" id="cropReset">Reset</button>
-        <button class="btn primary" id="cropDone">Apply</button>
-      </div>
-    </div>
-    <div class="crop-stage" id="cropStage">
-      <img id="cropImg" class="crop-stage-img" style="display:none" alt="">
-      <video id="cropVid" class="crop-stage-img" style="display:none" muted loop playsinline></video>
-    </div>
-    <div class="crop-footer">
-      <span class="crop-zoom-label">Zoom</span>
-      <input type="range" class="crop-zoom-range" id="cropZoom" min="1" max="3" step="0.02" value="1">
-      <span class="crop-hint-txt">Drag to reposition · Scroll to zoom</span>
-    </div>
-  </div>
-</div>
-
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-// Load data.json from same origin (GitHub Pages), restore into localStorage
-(function(){try{const r=new XMLHttpRequest();r.open('GET','data.json?_='+Date.now(),false);r.send();if(r.status===200){const d=JSON.parse(r.responseText);Object.keys(d).forEach(function(k){localStorage.setItem(k,d[k]);});}}catch(e){}})();
-
+<script>
 /* ══════════════════════════════════
    SCREEN ROUTER
 ══════════════════════════════════ */
@@ -964,33 +552,11 @@ function goScreen(id){
   document.getElementById('nav-about').classList.toggle('on', id==='s-about');
   document.getElementById('nav-work').classList.toggle('on',  id==='s-portfolio');
   document.getElementById('nav-exp').classList.toggle('on',   id==='s-experience');
-  // Per-screen action buttons
-  document.getElementById('abEditToggle').style.display = id==='s-about' ? '' : 'none';
-  document.getElementById('openEditBtn').style.display  = id==='s-portfolio'  ? '' : 'none';
-  document.getElementById('expEditToggle').style.display = id==='s-experience'  ? '' : 'none';
-  // Mobile edit button in nav menu
-  const mBtn=document.getElementById('mobileEditBtn');
-  if(mBtn){
-    if(id==='s-about') mBtn.textContent='Edit About';
-    else if(id==='s-portfolio') mBtn.textContent='Edit Projects';
-    else if(id==='s-experience') mBtn.textContent='Edit Experience';
-    else mBtn.textContent='';
-    mBtn.onclick=()=>{
-      closeMobileNav();
-      if(id==='s-about') abEnterEdit();
-      else if(id==='s-portfolio') openEditor();
-      else if(id==='s-experience') expEnterEdit();
-    };
-  }
-
   if(id==='s-portfolio') rebuildAll();
   if(id==='s-about') requestAnimationFrame(()=>layoutAboutPhoto());
   // close mobile nav if open
   if(typeof closeMobileNav==='function') closeMobileNav();
 }
-
-// Landing click
-document.getElementById('s-landing').addEventListener('click',()=>goScreen('s-about'));
 
 /* ── Mobile nav ── */
 function toggleMobileNav(){
@@ -1003,9 +569,6 @@ function closeMobileNav(){
   document.getElementById('g-hamburger').classList.remove('open');
   document.getElementById('g-mobile-nav').classList.remove('show');
 }
-document.getElementById('mobileSaveBtn').addEventListener('click',()=>{closeMobileNav();exportPortfolio();});
-updateTokenResetBtn();
-
 // Init landing
 const sl=document.getElementById('s-landing');
 sl.classList.add('active');
@@ -1014,102 +577,16 @@ requestAnimationFrame(()=>requestAnimationFrame(()=>sl.classList.add('visible'))
 /* ══════════════════════════════════
    ABOUT PAGE
 ══════════════════════════════════ */
-const AB_KEY='pf_about_v1';
-let abData=loadAbout();
-let abEditing=false;
-let abSnapshot={};
-
-function loadAbout(){
-  const def={
-    name:'Your Name', role:'Designer & Creative Director',
-    bio:'Write a short introduction about yourself here. Share your background, what drives your creative work, and the kind of projects you care about most.',
-    label1:'Based in', val1:'City, Country',
-    label2:'Disciplines', val2:'Brand Identity · Art Direction · Motion · Digital',
-    label3:'Contact', val3:'hello@yourname.com',
-    photoSrc:'', photoW:280, photoH:380,
-    photoZoom:1, photoPanX:0, photoPanY:0,
-    frameX: 0
-  };
-  try{const r=localStorage.getItem(AB_KEY);if(r){const o=JSON.parse(r);return{...def,...o,photoZoom:typeof o.photoZoom==='number'?o.photoZoom:1,photoPanX:typeof o.photoPanX==='number'?o.photoPanX:0,photoPanY:typeof o.photoPanY==='number'?o.photoPanY:0,frameX:typeof o.frameX==='number'?o.frameX:0};}}catch(e){}
-  return def;
-}
-function isStorageQuotaError(e){
-  if(!e)return false;
-  if(e.name==='QuotaExceededError')return true;
-  if(e.name==='NS_ERROR_DOM_QUOTA_REACHED')return true;
-  if(typeof DOMException!=='undefined'&&e instanceof DOMException&&e.code===22)return true;
-  if(e.code===22||e.code===1014)return true;
-  return false;
-}
-function compressAboutPhotoDataUrl(dataUrl,maxSide,quality){
-  return new Promise((resolve,reject)=>{
-    if(!dataUrl||typeof dataUrl!=='string'||!dataUrl.startsWith('data:')){
-      reject(new Error('bad data url'));
-      return;
-    }
-    const im=new Image();
-    im.onload=()=>{
-      const w=im.naturalWidth,h=im.naturalHeight;
-      if(!w||!h){reject(new Error('bad size'));return;}
-      const sc=Math.min(1,maxSide/Math.max(w,h));
-      const tw=Math.max(1,Math.round(w*sc)),th=Math.max(1,Math.round(h*sc));
-      try{
-        const c=document.createElement('canvas');
-        c.width=tw;c.height=th;
-        const x=c.getContext('2d');
-        x.fillStyle='#fff';
-        x.fillRect(0,0,tw,th);
-        x.drawImage(im,0,0,tw,th);
-        resolve({url:c.toDataURL('image/jpeg',quality),scale:sc});
-      }catch(err){reject(err);}
-    };
-    im.onerror=()=>reject(new Error('decode'));
-    im.src=dataUrl;
-  });
-}
-async function saveAboutResilient(){
-  const write=()=>{localStorage.setItem(AB_KEY,JSON.stringify(abData));};
-  let maxSide=2048,q=0.88;
-  if(abData.photoSrc&&abData.photoSrc.startsWith('data:')&&abData.photoSrc.length>2000000){
-    try{
-      const r=await compressAboutPhotoDataUrl(abData.photoSrc,1920,0.85);
-      abData.photoSrc=r.url;
-      const imel=document.getElementById('abPhotoImg');
-      imel.onload=()=>{clampAboutPhotoPan();layoutAboutPhoto();};
-      imel.src=r.url;
-    }catch(e){}
-  }
-  for(let attempt=0;attempt<16;attempt++){
-    try{
-      write();
-      return true;
-    }catch(e){
-      if(!isStorageQuotaError(e)||!abData.photoSrc||!abData.photoSrc.startsWith('data:'))
-        return false;
-      try{
-        const r=await compressAboutPhotoDataUrl(abData.photoSrc,maxSide,q);
-        abData.photoSrc=r.url;
-        const imel=document.getElementById('abPhotoImg');
-        imel.onload=()=>{clampAboutPhotoPan();layoutAboutPhoto();};
-        imel.src=r.url;
-      }catch(err){
-        return false;
-      }
-      maxSide=Math.max(400,Math.round(maxSide*0.72));
-      q=Math.max(0.35,q-0.065);
-    }
-  }
-  return false;
-}
+let abData = {};
 
 function renderAbout(){
   const d=abData;
-  setEditable('abName',d.name);
-  setEditable('abRole',d.role);
-  setEditable('abBio',d.bio);
-  setEditable('abLabel1',d.label1);setEditable('abVal1',d.val1);
-  setEditable('abLabel2',d.label2);setEditable('abVal2',d.val2);
-  setEditable('abLabel3',d.label3);setEditable('abVal3',d.val3);
+  setAboutText('abName',d.name);
+  setAboutText('abRole',d.role);
+  setAboutText('abBio',d.bio);
+  setAboutText('abLabel1',d.label1);setAboutText('abVal1',d.val1);
+  setAboutText('abLabel2',d.label2);setAboutText('abVal2',d.val2);
+  setAboutText('abLabel3',d.label3);setAboutText('abVal3',d.val3);
   const wrap=document.getElementById('abPhotoWrap');
   wrap.style.setProperty('--photo-w',(d.photoW||280)+'px');
   wrap.style.setProperty('--photo-h',(d.photoH||380)+'px');
@@ -1119,7 +596,6 @@ function renderAbout(){
   const img=document.getElementById('abPhotoImg');
   if(d.photoSrc){
     img.style.display='block';
-    document.getElementById('abPhotoEmpty').style.display='none';
     const applyLayout=()=>layoutAboutPhoto();
     img.onload=applyLayout;
     img.src=d.photoSrc;
@@ -1127,109 +603,12 @@ function renderAbout(){
   } else {
     img.style.display='none';
     img.removeAttribute('src');
-    document.getElementById('abPhotoEmpty').style.display='flex';
   }
-  syncAboutPhotoEditUI();
 }
-function setEditable(id,val){
+function setAboutText(id,val){
   const el=document.getElementById(id);
   if(el)el.innerText=val||'';
 }
-function getEditable(id){
-  const el=document.getElementById(id);
-  return el?el.innerText.trim():'';
-}
-
-function abEnterEdit(){
-  if(!sessionStorage.getItem('pf_unlocked')){requirePassword(abEnterEdit);return;}
-  abEditing=true;
-  abSnapshot=JSON.parse(JSON.stringify(abData));
-  // Enable contenteditable
-  document.querySelectorAll('.ab-editable').forEach(el=>{
-    el.contentEditable='true';
-  });
-  // Show field hints
-  document.querySelectorAll('.ab-field').forEach(f=>f.classList.add('editing-mode'));
-  document.getElementById('ab-edit-bar').classList.add('show');
-  document.getElementById('abEditToggle').textContent='Editing...';
-  document.getElementById('abEditToggle').style.opacity='.5';
-  syncAboutPhotoEditUI();
-  requestAnimationFrame(()=>layoutAboutPhoto());
-}
-function abExitEdit(){
-  abEditing=false;
-  document.querySelectorAll('.ab-editable').forEach(el=>{
-    el.contentEditable='false';
-  });
-  document.querySelectorAll('.ab-field').forEach(f=>f.classList.remove('editing-mode'));
-  document.getElementById('ab-edit-bar').classList.remove('show');
-  document.getElementById('abEditToggle').textContent='Edit Page';
-  document.getElementById('abEditToggle').style.opacity='1';
-  syncAboutPhotoEditUI();
-}
-let abSaving=false;
-async function abSave(){
-  if(abSaving)return;
-  abSaving=true;
-  try{
-    abData.name=getEditable('abName');
-    abData.role=getEditable('abRole');
-    abData.bio=getEditable('abBio');
-    abData.label1=getEditable('abLabel1');abData.val1=getEditable('abVal1');
-    abData.label2=getEditable('abLabel2');abData.val2=getEditable('abVal2');
-    abData.label3=getEditable('abLabel3');abData.val3=getEditable('abVal3');
-    const wrap=document.getElementById('abPhotoWrap');
-    abData.photoW=parseInt(wrap.style.width)||280;
-    abData.photoH=parseInt(wrap.style.height)||380;
-    clampAboutPhotoPan();
-    abData.photoZoom=abData.photoZoom||1;
-    abData.photoPanX=abData.photoPanX||0;
-    abData.photoPanY=abData.photoPanY||0;
-    abData.frameX=abData.frameX||0;
-    const ok=await saveAboutResilient();
-    if(!ok){
-      toast('存储已满：已尽量压缩图片仍无法写入，请换更小的照片或清空本站数据');
-      return;
-    }
-    abExitEdit();
-    toast('已保存');
-  }finally{
-    abSaving=false;
-  }
-}
-function abCancel(){
-  try{abData=JSON.parse(JSON.stringify(abSnapshot));}catch(e){abData=loadAbout();}
-  renderAbout();
-  abExitEdit();
-}
-
-document.getElementById('abEditToggle').addEventListener('click',()=>{
-  if(!abEditing)abEnterEdit(); else void abSave();
-});
-
-function syncAboutPhotoEditUI(){
-  const wrap=document.getElementById('abPhotoWrap');
-  const inp=document.getElementById('abPhotoInput');
-  const act=document.getElementById('abPhotoActions');
-  const hint=document.getElementById('abSizeHint');
-  const has=!!abData.photoSrc;
-  wrap.classList.toggle('ab-photo-edit-photo',abEditing&&has);
-  wrap.classList.toggle('ab-photo-editing',abEditing);
-  if(!abEditing)wrap.classList.remove('ab-photo-resize-active');
-  act.style.display=(abEditing&&has)?'flex':'none';
-  if(abEditing){
-    hint.textContent=has?'拖拽移动图片位置 · 右下角调相框大小 · 滚轮缩放':'点击上传 · 右下角可先调相框大小';
-    if(has){
-      inp.style.cssText='position:absolute;width:0;height:0;opacity:0;pointer-events:none;padding:0;border:0;overflow:hidden;';
-    }else{
-      inp.style.cssText='position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:3;pointer-events:auto;';
-    }
-  }else{
-    hint.textContent=has?'':'点击上传照片';
-    inp.style.cssText='position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:3;pointer-events:none;';
-  }
-}
-
 function layoutAboutPhoto(){
   const wrap=document.getElementById('abPhotoWrap');
   const img=document.getElementById('abPhotoImg');
@@ -1239,7 +618,6 @@ function layoutAboutPhoto(){
   const iw=img.naturalWidth,ih=img.naturalHeight;
   if(!iw||!ih)return;
   let z=abData.photoZoom;if(typeof z!=='number'||z<1)z=1;if(z>4)z=4;
-  abData.photoZoom=z;
   const cover=Math.max(W/iw,H/ih);
   const scale=cover*z;
   const dw=iw*scale,dh=ih*scale;
@@ -1251,188 +629,20 @@ function layoutAboutPhoto(){
   else{left=Math.min(W-dw,Math.max(0,left));}
   if(dh>=H){top=Math.min(0,Math.max(H-dh,top));}
   else{top=Math.min(H-dh,Math.max(0,top));}
-  abData.photoPanX=left-(W-dw)/2;
-  abData.photoPanY=top-(H-dh)/2;
   img.style.width=dw+'px';
   img.style.height=dh+'px';
   img.style.left=left+'px';
   img.style.top=top+'px';
 }
 
-function clampAboutPhotoPan(){
-  const wrap=document.getElementById('abPhotoWrap');
-  const img=document.getElementById('abPhotoImg');
-  if(!abData.photoSrc||!img.naturalWidth)return;
-  layoutAboutPhoto();
+if(typeof ResizeObserver!=='undefined'){
+  new ResizeObserver(layoutAboutPhoto).observe(document.getElementById('abPhotoWrap'));
 }
-
-// Photo upload（大图先压缩，避免 localStorage 配额溢出）
-document.getElementById('abPhotoInput').addEventListener('change',e=>{
-  const f=e.target.files[0];
-  if(!f)return;
-  const r=new FileReader();
-  r.onload=async ev=>{
-    const raw=ev.target.result;
-    try{
-      let url=raw;
-      let note='照片已更新';
-      if(typeof raw==='string'&&raw.length>450000){
-        const c=await compressAboutPhotoDataUrl(raw,2048,0.88);
-        url=c.url;
-        note='照片已更新（已压缩以便保存）';
-      }
-      abData.photoSrc=url;
-      abData.photoZoom=1;
-      abData.photoPanX=0;
-      abData.photoPanY=0;
-      const img=document.getElementById('abPhotoImg');
-      img.onload=()=>{layoutAboutPhoto();syncAboutPhotoEditUI();};
-      img.src=url;
-      img.style.display='block';
-      document.getElementById('abPhotoEmpty').style.display='none';
-      toast(note);
-    }catch(err){
-      toast('照片处理失败，请换一张图片重试');
-    }
-  };
-  r.readAsDataURL(f);
-  e.target.value='';
-});
-document.getElementById('abPhotoReplace').addEventListener('click',()=>{
-  if(abEditing&&abData.photoSrc)document.getElementById('abPhotoInput').click();
-});
-
-// disable photo input by default
-document.getElementById('abPhotoInput').style.pointerEvents='none';
-
-function abPhotoFrameReset(){
-  const wrap=document.getElementById('abPhotoWrap');
-  wrap.style.width='280px';
-  wrap.style.height='380px';
-  abData.photoZoom=1;
-  abData.photoPanX=0;
-  abData.photoPanY=0;
-  abData.frameX=0;
-  wrap.style.transform=`translateX(0px)`;
-  layoutAboutPhoto();
-}
-document.getElementById('abPhotoReset').addEventListener('click',e=>{
-  e.preventDefault();
-  e.stopPropagation();
-  if(abEditing&&abData.photoSrc)abPhotoFrameReset();
-});
-
-// 右下角拖动调整相框（编辑模式下）
-(function setupAboutPhotoFrameResize(){
-  const wrap=document.getElementById('abPhotoWrap');
-  const handle=document.getElementById('abPhotoResizeHandle');
-  let active=false,sx,sy,sw,sh;
-  function end(){
-    active=false;
-    wrap.classList.remove('ab-photo-resize-active');
-  }
-  handle.addEventListener('pointerdown',e=>{
-    if(!abEditing)return;
-    e.preventDefault();
-    e.stopPropagation();
-    handle.setPointerCapture(e.pointerId);
-    active=true;
-    wrap.classList.add('ab-photo-resize-active');
-    sx=e.clientX;
-    sy=e.clientY;
-    sw=wrap.offsetWidth;
-    sh=wrap.offsetHeight;
-  });
-  handle.addEventListener('pointermove',e=>{
-    if(!active)return;
-    const dw=e.clientX-sx,dh=e.clientY-sy;
-    let w=Math.min(480,Math.max(120,sw+dw));
-    let h=Math.min(560,Math.max(120,sh+dh));
-    wrap.style.width=w+'px';
-    wrap.style.height=h+'px';
-    layoutAboutPhoto();
-  });
-  handle.addEventListener('pointerup',end);
-  handle.addEventListener('pointercancel',end);
-  handle.addEventListener('lostpointercapture',end);
-})();
-
-// Drag / wheel / touch on about photo (edit mode)
-(function setupAboutPhotoInteract(){
-  const wrap=document.getElementById('abPhotoWrap');
-  const shield=document.getElementById('abPhotoDragShield');
-  let drag=false,sx,sy,ox,oy;
-  let abAutoSaveT;
-  function abAutoSave(){
-    clearTimeout(abAutoSaveT);
-    abAutoSaveT=setTimeout(async()=>{
-      if(!abData.photoSrc)return;
-      clampAboutPhotoPan();
-      abData.photoZoom=abData.photoZoom||1;
-      abData.photoPanX=abData.photoPanX||0;
-      abData.photoPanY=abData.photoPanY||0;
-      abData.frameX=abData.frameX||0;
-      await saveAboutResilient();
-    },600);
-  }
-  function endDrag(){drag=false;abAutoSave();}
-  shield.addEventListener('pointerdown',e=>{
-    if(!abEditing||!abData.photoSrc)return;
-    e.preventDefault();
-    shield.setPointerCapture(e.pointerId);
-    drag=true;
-    sx=e.clientX; sy=e.clientY;
-    ox=abData.photoPanX||0; oy=abData.photoPanY||0;
-  });
-  shield.addEventListener('pointermove',e=>{
-    if(!drag)return;
-    abData.photoPanX=ox+(e.clientX-sx);
-    abData.photoPanY=oy+(e.clientY-sy);
-    layoutAboutPhoto();
-  });
-  shield.addEventListener('pointerup',endDrag);
-  shield.addEventListener('pointercancel',endDrag);
-  shield.addEventListener('lostpointercapture',endDrag);
-  wrap.addEventListener('wheel',e=>{
-    if(!abEditing||!abData.photoSrc)return;
-    e.preventDefault();
-    const dz=e.deltaY>0?0.94:1.06;
-    let z=(abData.photoZoom||1)*dz;
-    z=Math.max(1,Math.min(4,z));
-    abData.photoZoom=z;
-    layoutAboutPhoto();
-    abAutoSave();
-  },{passive:false});
-  if(typeof ResizeObserver!=='undefined'){
-    new ResizeObserver(()=>layoutAboutPhoto()).observe(wrap);
-  }
-})();
-
-renderAbout();
-
 /* ══════════════════════════════════
    PORTFOLIO
 ══════════════════════════════════ */
-const DEFAULTS=[
-  {title:"Brand Identity System",category:"Identity",desc:"A comprehensive visual identity for a luxury fashion house. Spanning print, digital, and environmental applications across 12 international markets.",year:"2024",role:"Creative Director",tags:["Branding","Print","Strategy"],pattern:"grid",media:[]},
-  {title:"Interactive Web Experience",category:"Digital",desc:"An award-winning digital experience for a global technology company. Featuring real-time data visualization and motion design at scale.",year:"2024",role:"Lead Designer",tags:["Web Design","Motion","UX"],pattern:"lines",media:[]},
-  {title:"Editorial Photography",category:"Photography",desc:"A six-month documentary series exploring urban solitude in post-pandemic cities. Published in three international design publications.",year:"2023",role:"Art Director",tags:["Photography","Editorial","Print"],pattern:"dots",media:[]},
-  {title:"Spatial Design Installation",category:"Spatial",desc:"A 400m² immersive installation for a contemporary art museum. Exploring the intersection of light, sound, and physical space.",year:"2023",role:"Spatial Designer",tags:["Installation","Light","Sound"],pattern:"cross",media:[]},
-  {title:"Motion Graphics Trilogy",category:"Motion",desc:"A series of three short films exploring typographic systems in motion. Premiered at the design film festival in Amsterdam.",year:"2022",role:"Motion Director",tags:["Motion","Typography","Film"],pattern:"circles",media:[]}
-];
-function loadProjects(){try{const r=localStorage.getItem('pf_v3');if(r)return JSON.parse(r);}catch(e){}return DEFAULTS.map(p=>({...p,media:[]}));}
-function saveProjects(){
-  // Strip in-memory preview blobs before saving (they're only for immediate display)
-  const toSave = projects.map(p => ({
-    ...p,
-    media: (p.media||[]).map(m => { const {preview,...rest}=m; return rest; })
-  }));
-  try{ localStorage.setItem('pf_v3',JSON.stringify(toSave)); }
-  catch(e){ toast('Storage full — try removing some images'); throw e; }
-}
-let projects=loadProjects();
-projects.forEach(p=>{if(!p.media)p.media=[];});
-let current=0,animating=false,editIdx=-1;
+let projects = [];
+let current=0,animating=false;
 const slideTimers={},slideIdx={};
 
 function pat(type){
@@ -1457,7 +667,7 @@ function buildDrum(){
     let slidesHTML='';
     media.forEach((m,mi)=>{
       const vis=mi===0?' visible':'';
-      // Reproduce crop-editor positioning: object-position maps focal point to cover-fit image
+      // Reproduce the saved framing with the focal point and zoom.
       const fx = m.focalX !== undefined ? m.focalX : 50;
       const fy = m.focalY !== undefined ? m.focalY : 50;
       const zoom = m.cropZoom || 1;
@@ -1657,7 +867,6 @@ document.getElementById('stage').addEventListener('touchend',e=>{
   if(Math.abs(d)>36||vel>0.28)goTo(current+(d>0?1:-1));
 });
 document.addEventListener('keydown',e=>{
-  if(document.getElementById('editPanel').classList.contains('open'))return;
   if(document.getElementById('lightbox').classList.contains('open'))return;
   if(currentScreen!=='s-portfolio')return;
   if(e.key==='ArrowUp'||e.key==='ArrowLeft')goTo(current-1);
@@ -1772,275 +981,10 @@ document.addEventListener('keydown',e=>{
   },{passive:false});
 }
 
-/* ── PROJECT EDITOR ── */
-function openEditor(){if(!sessionStorage.getItem('pf_unlocked')){requirePassword(openEditor);return;}document.getElementById('editPanel').classList.add('open');renderList();editIdx=-1;showEmpty();}
-function closeEditor(){document.getElementById('editPanel').classList.remove('open');rebuildAll();}
-function showEmpty(){document.getElementById('epEmpty').style.display='flex';document.getElementById('epForm').style.display='none';}
-function renderList(){
-  const list=document.getElementById('epList');list.innerHTML='';
-  projects.forEach((p,i)=>{
-    const item=document.createElement('div');item.className='ep-item'+(i===editIdx?' active':'');
-    item.innerHTML=`<span class="ep-item-name">${p.title||'Untitled'}</span><span class="ep-item-num">${String(i+1).padStart(2,'0')}</span>`;
-    item.addEventListener('click',()=>selectProject(i));list.appendChild(item);
-  });
-}
-function selectProject(idx){
-  editIdx=idx;renderList();const p=projects[idx];
-  document.getElementById('epEmpty').style.display='none';document.getElementById('epForm').style.display='block';
-  document.getElementById('epFormTitle').textContent='Editing: '+(p.title||'Untitled');
-  document.getElementById('fTitle').value=p.title||'';document.getElementById('fCat').value=p.category||'';
-  document.getElementById('fYear').value=p.year||'';document.getElementById('fRole').value=p.role||'';
-  document.getElementById('fDesc').value=p.desc||'';
-  document.getElementById('fTags').value=(p.tags||[]).join(', ');
-  document.getElementById('fPattern').value=p.pattern||'grid';
-  renderMediaGrid();
-}
-function renderMediaGrid(){
-  const grid=document.getElementById('mediaGrid');const media=projects[editIdx]&&projects[editIdx].media||[];
-  grid.innerHTML='';
-  if(!media.length){grid.innerHTML='<div class="media-empty">No media yet — upload below</div>';return;}
-  media.forEach((m,mi)=>{
-    const item=document.createElement('div');item.className='media-item';
-    const displaySrc=m.preview||m.src;
-    if(m.type==='video')item.innerHTML=`<video src="${displaySrc}" muted preload="metadata" style="width:100%;height:100%;object-fit:cover"></video><span class="media-item-type">VIDEO</span>`;
-    else item.innerHTML=`<img src="${displaySrc}" alt="" style="width:100%;height:100%;object-fit:cover"><span class="media-item-type">IMAGE</span>`;
-    const del=document.createElement('div');del.className='media-item-del';del.textContent='×';
-    del.addEventListener('click',e=>{e.stopPropagation();projects[editIdx].media.splice(mi,1);saveProjects();renderMediaGrid();toast('Removed');});
-    item.appendChild(del);
-    const cropBtn=document.createElement('div');cropBtn.className='media-item-crop';cropBtn.title='Crop & Position';cropBtn.innerHTML='⊹';
-    cropBtn.addEventListener('click',e=>{e.stopPropagation();openCropModal(editIdx,mi);});
-    item.appendChild(cropBtn);
-    grid.appendChild(item);
-  });
-}
-async function uploadMediaToGitHub(file, b64) {
-  let token = localStorage.getItem('pf_gh_token');
-  if(!token) {
-    token = prompt('GitHub Personal Access Token (needed to upload media):');
-    if(!token) return null;
-    token = token.trim();
-    localStorage.setItem('pf_gh_token', token);
-    updateTokenResetBtn();
-  }
-  const base = `https://api.github.com/repos/${GH_REPO}`;
-  const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'X-GitHub-Api-Version': '2022-11-28' };
-  const safeName = Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-  const path = `media/${safeName}`;
-
-  // Use Git Data API (blob → tree → commit) — no size limit unlike Contents API
-  const blobRes = await fetch(`${base}/git/blobs`, { method:'POST', headers, body: JSON.stringify({content:b64, encoding:'base64'}) });
-  if(!blobRes.ok){ const t=await blobRes.text(); throw new Error('blob '+blobRes.status+': '+t.slice(0,80)); }
-  const {sha: blobSha} = await blobRes.json();
-
-  const refRes = await fetch(`${base}/git/refs/heads/main`, {headers});
-  if(!refRes.ok) throw new Error('ref '+refRes.status);
-  const {object:{sha:commitSha}} = await refRes.json();
-
-  const commitRes = await fetch(`${base}/git/commits/${commitSha}`, {headers});
-  if(!commitRes.ok) throw new Error('commit '+commitRes.status);
-  const {tree:{sha:treeSha}} = await commitRes.json();
-
-  const treeRes = await fetch(`${base}/git/trees`, { method:'POST', headers, body: JSON.stringify({base_tree:treeSha, tree:[{path, mode:'100644', type:'blob', sha:blobSha}]}) });
-  if(!treeRes.ok) throw new Error('tree '+treeRes.status);
-  const {sha:newTreeSha} = await treeRes.json();
-
-  const newCommitRes = await fetch(`${base}/git/commits`, { method:'POST', headers, body: JSON.stringify({message:'media: upload '+safeName, tree:newTreeSha, parents:[commitSha]}) });
-  if(!newCommitRes.ok) throw new Error('newcommit '+newCommitRes.status);
-  const {sha:newCommitSha} = await newCommitRes.json();
-
-  const patchRes = await fetch(`${base}/git/refs/heads/main`, { method:'PATCH', headers, body: JSON.stringify({sha:newCommitSha}) });
-  if(!patchRes.ok) throw new Error('patch '+patchRes.status);
-
-  return `https://cineaste17.github.io/portfolio/${path}`;
-}
-
-function handleFiles(files){
-  if(editIdx<0)return;
-  const arr=Array.from(files).filter(f=>f.type.startsWith('image/')||f.type.startsWith('video/'));
-  if(!arr.length)return;
-  toast(`Uploading ${arr.length} file${arr.length>1?'s':''}…`);
-  (async () => {
-    let uploaded=0;
-    for(const file of arr){
-      const isVid=file.type.startsWith('video/');
-      try {
-        const dataUrl = await new Promise((res,rej)=>{ const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(file); });
-        let finalUrl = dataUrl;
-        if(!isVid && finalUrl.length > 800*1024*1.37) {
-          let maxSide=3000, q=0.88;
-          while(finalUrl.length > 800*1024*1.37 && q > 0.4) {
-            try{ const r=await compressAboutPhotoDataUrl(finalUrl,maxSide,q); finalUrl=r.url; }catch(err){break;}
-            q-=0.08; maxSide=Math.round(maxSide*0.85);
-          }
-        }
-        const b64=finalUrl.split(',')[1];
-        const url=await uploadMediaToGitHub(file, b64);
-        if(url){
-          projects[editIdx].media.push({type:isVid?'video':'image',src:url,preview:finalUrl,name:file.name});
-          uploaded++;
-          toast(`Uploading… ${uploaded}/${arr.length}`);
-        }
-      } catch(err) {
-        console.error('Upload error:', err);
-        toast('Error: '+err.message);
-      }
-    }
-    if(uploaded){
-      try{ saveProjects(); }catch(e){ toast('Save failed: '+e.message); return; }
-      renderMediaGrid();
-      toast(`Uploaded & saved (${uploaded}/${arr.length})`);
-    }
-  })();
-}
-document.getElementById('mediaInput').addEventListener('change',e=>handleFiles(e.target.files));
-const drop=document.getElementById('mediaDrop');
-drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('dragover');});
-drop.addEventListener('dragleave',()=>drop.classList.remove('dragover'));
-drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('dragover');handleFiles(e.dataTransfer.files);});
-document.getElementById('saveBtn').addEventListener('click',()=>{
-  if(editIdx<0)return;
-  const tags=document.getElementById('fTags').value.split(',').map(t=>t.trim()).filter(Boolean);
-  projects[editIdx]={...projects[editIdx],title:document.getElementById('fTitle').value.trim(),category:document.getElementById('fCat').value.trim(),year:document.getElementById('fYear').value.trim(),role:document.getElementById('fRole').value.trim(),desc:document.getElementById('fDesc').value.trim(),tags,pattern:document.getElementById('fPattern').value};
-  saveProjects();publishToGitHub();document.getElementById('epFormTitle').textContent='Editing: '+(projects[editIdx].title||'Untitled');renderList();toast('Saved!');
-});
-document.getElementById('deleteBtn').addEventListener('click',()=>{
-  if(editIdx<0)return;if(projects.length<=1){toast('Need at least 1 project');return;}
-  if(!confirm('Delete "'+projects[editIdx].title+'"?'))return;
-  projects.splice(editIdx,1);saveProjects();editIdx=-1;renderList();showEmpty();toast('Deleted');
-});
-document.getElementById('addBtn').addEventListener('click',()=>{
-  projects.push({title:'New Project',category:'Category',desc:'Describe your project.',year:new Date().getFullYear()+'',role:'Your Role',tags:['Tag'],pattern:'grid',media:[]});
-  saveProjects();renderList();selectProject(projects.length-1);toast('Project added');
-});
-document.getElementById('openEditBtn').addEventListener('click',openEditor);
-document.getElementById('closeEditBtn').addEventListener('click',closeEditor);
-
-function toast(msg){
-  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2200);
-}
-
-/* ══════════════════════════════════
-   FONT PICKER
-══════════════════════════════════ */
-const FONTS = [
-  { id:'dm',       name:'DM Sans',           family:"'DM Sans', sans-serif",           weight:'200',  sample:'DM Sans',           style:'normal' },
-  { id:'outfit',   name:'Outfit',             family:"'Outfit', sans-serif",             weight:'200',  sample:'Outfit',             style:'normal' },
-  { id:'syne',     name:'Syne',               family:"'Syne', sans-serif",               weight:'300',  sample:'Syne',               style:'normal' },
-  { id:'jakarta',  name:'Plus Jakarta Sans',  family:"'Plus Jakarta Sans', sans-serif",  weight:'200',  sample:'Plus Jakarta',       style:'normal' },
-  { id:'instrument',name:'Instrument Sans',   family:"'Instrument Sans', sans-serif",    weight:'300',  sample:'Instrument',         style:'normal' },
-  { id:'grotesk',  name:'Space Grotesk',      family:"'Space Grotesk', sans-serif",      weight:'300',  sample:'Space Grotesk',      style:'normal' },
-  { id:'cormorant',name:'Cormorant Garamond', family:"'Cormorant Garamond', serif",      weight:'300',  sample:'Cormorant',          style:'italic' },
-];
-
-const FONT_KEY = 'pf_font_v1';
-let activeFont = localStorage.getItem(FONT_KEY) || 'dm';
-
-function applyFont(id) {
-  const f = FONTS.find(x => x.id === id) || FONTS[0];
-  activeFont = id;
-  localStorage.setItem(FONT_KEY, id);
-  const root = document.documentElement;
-  root.style.setProperty('--font-display', f.family);
-  root.style.setProperty('--font-body', f.family);
-  // update letter-spacing for landing word based on font type
-  const lw = document.querySelector('.l-word');
-  if(lw) {
-    lw.style.fontStyle = f.style;
-    lw.style.fontWeight = f.weight;
-    lw.style.letterSpacing = f.id === 'cormorant' ? '.05em' : '-.04em';
-  }
-  // update logos
-  document.querySelectorAll('.ab-logo,.pf-logo').forEach(el=>{
-    el.style.fontStyle = f.id==='cormorant'?'italic':'normal';
-    el.style.letterSpacing = f.id==='cormorant'?'.04em':'-.02em';
-  });
-  renderFontList();
-}
-
-function buildFontPicker() {
-  // Remove any previously baked-in copies (e.g. from an exported HTML)
-  document.getElementById('fontBtn')?.remove();
-  document.getElementById('fontPanel')?.remove();
-  document.body.insertAdjacentHTML('beforeend', `
-    <button id="fontBtn" title="Change font">Aa</button>
-    <div id="fontPanel">
-      <div class="fp-head">Display Font</div>
-      <div class="fp-list" id="fpList"></div>
-    </div>
-  `);
-  document.getElementById('fontBtn').addEventListener('click', e => {
-    e.stopPropagation();
-    document.getElementById('fontPanel').classList.toggle('open');
-  });
-  document.addEventListener('click', e => {
-    const panel = document.getElementById('fontPanel');
-    if(panel && !panel.contains(e.target) && e.target.id !== 'fontBtn') {
-      panel.classList.remove('open');
-    }
-  });
-  renderFontList();
-  applyFont(activeFont);
-}
-
-function renderFontList() {
-  const list = document.getElementById('fpList');
-  if(!list) return;
-  list.innerHTML = '';
-  FONTS.forEach(f => {
-    const item = document.createElement('div');
-    item.className = 'fp-item' + (f.id === activeFont ? ' active' : '');
-    item.innerHTML = `
-      <span class="fp-name">${f.name}</span>
-      <span class="fp-sample" style="font-family:${f.family};font-weight:${f.weight};font-style:${f.style}">${f.sample}</span>
-    `;
-    item.addEventListener('click', () => {
-      applyFont(f.id);
-      document.getElementById('fontPanel').classList.remove('open');
-      toast('Font: ' + f.name);
-    });
-    list.appendChild(item);
-  });
-}
-
-buildFontPicker();
-
 /* ══════════════════════════════════
    EXPERIENCE PAGE
 ══════════════════════════════════ */
-const EXP_KEY = 'pf_exp_v1';
-
-const EXP_DEFAULTS = {
-  internships: [
-    { id: 'i1', role: 'Design Intern', org: 'Studio Name', period: 'Jun – Aug 2024', desc: 'Worked on brand identity projects for clients across retail and tech. Contributed to visual systems, style guides, and presentation design.' },
-    { id: 'i2', role: 'UX Research Intern', org: 'Company Name', period: 'Jan – Apr 2024', desc: 'Conducted user interviews and synthesized findings to inform product decisions. Created journey maps and presented insights to cross-functional teams.' }
-  ],
-  campus: [
-    { id: 'c1', role: 'President', org: 'Design Society', period: '2022 – 2024', desc: 'Led a 60-member student design club. Organized workshops, critiques, and an annual design exhibition attended by 400+ people.' },
-    { id: 'c2', role: 'Editor-in-Chief', org: 'Student Magazine', period: '2021 – 2023', desc: 'Oversaw editorial direction, art direction, and layout for a semesterly publication. Managed a team of 12 designers and writers.' }
-  ],
-  exchange: [
-    { id: 'e1', role: 'Exchange Student', org: 'University Name', period: 'Sep 2023 – Jan 2024', desc: 'Studied design and culture abroad. Coursework in interaction design and visual communication.' }
-  ]
-};
-
-function loadExp() {
-  try {
-    const r = localStorage.getItem(EXP_KEY);
-    if(r) {
-      const d = JSON.parse(r);
-      // Migrate: add missing sections from defaults
-      Object.keys(EXP_DEFAULTS).forEach(k => { if(!d[k]) d[k] = JSON.parse(JSON.stringify(EXP_DEFAULTS[k])); });
-      return d;
-    }
-  } catch(e) {}
-  return JSON.parse(JSON.stringify(EXP_DEFAULTS));
-}
-function saveExp() { localStorage.setItem(EXP_KEY, JSON.stringify(expData)); }
-
-let expData = loadExp();
-let expEditing = false;
-let expSnapshot = null;
+let expData = {};
 
 function renderExp() {
   renderExpSection('internships', 'exp-intern-list');
@@ -2053,96 +997,26 @@ function renderExpSection(key, listId) {
   if(!list) return;
   list.innerHTML = '';
   if(!expData[key]) return;
-  expData[key].forEach((item, idx) => {
+  expData[key].forEach(item => {
     const row = document.createElement('div');
     row.className = 'exp-row';
-    row.dataset.key = key;
-    row.dataset.idx = idx;
     row.innerHTML = `
       <div class="exp-row-left">
-        <div class="exp-period exp-editable" data-field="period" data-key="${key}" data-idx="${idx}" spellcheck="false">${(item.period||'').replace(/\n/g,'<br>')}</div>
+        <div class="exp-period"></div>
       </div>
       <div class="exp-row-right">
-        <div class="exp-role exp-editable" data-field="role" data-key="${key}" data-idx="${idx}" spellcheck="false">${(item.role||'').replace(/\n/g,'<br>')}</div>
-        <div class="exp-org exp-editable" data-field="org" data-key="${key}" data-idx="${idx}" spellcheck="false">${(item.org||'').replace(/\n/g,'<br>')}</div>
-        <div class="exp-desc exp-editable" data-field="desc" data-key="${key}" data-idx="${idx}" spellcheck="false">${(item.desc||'').replace(/\n/g,'<br>')}</div>
-        <button class="exp-del-btn" data-key="${key}" data-idx="${idx}" style="display:none">Delete</button>
+        <div class="exp-role"></div>
+        <div class="exp-org"></div>
+        <div class="exp-desc"></div>
       </div>
     `;
+    row.querySelector('.exp-period').innerText = item.period || '';
+    row.querySelector('.exp-role').innerText = item.role || '';
+    row.querySelector('.exp-org').innerText = item.org || '';
+    row.querySelector('.exp-desc').innerText = item.desc || '';
     list.appendChild(row);
   });
-  applyExpEditState();
 }
-
-function applyExpEditState() {
-  document.querySelectorAll('.exp-editable').forEach(el => {
-    el.contentEditable = expEditing ? 'true' : 'false';
-  });
-  document.querySelectorAll('.exp-del-btn').forEach(btn => {
-    btn.style.display = expEditing ? 'block' : 'none';
-  });
-  document.querySelectorAll('.exp-add-btn').forEach(btn => {
-    btn.style.display = expEditing ? 'flex' : 'none';
-  });
-  const bar = document.getElementById('exp-edit-bar');
-  if(bar) bar.classList.toggle('show', expEditing);
-  const toggle = document.getElementById('expEditToggle');
-  if(toggle) { toggle.textContent = expEditing ? 'Editing...' : 'Edit Page'; toggle.style.opacity = expEditing ? '.5' : '1'; }
-}
-
-function expEnterEdit() {
-  if(!sessionStorage.getItem('pf_unlocked')){requirePassword(expEnterEdit);return;}
-  expEditing = true;
-  expSnapshot = JSON.parse(JSON.stringify(expData));
-  applyExpEditState();
-}
-function expSave() {
-  // collect all editable values back into data
-  document.querySelectorAll('.exp-editable').forEach(el => {
-    const key = el.dataset.key, idx = parseInt(el.dataset.idx), field = el.dataset.field;
-    if(key && expData[key] && expData[key][idx] !== undefined) {
-      expData[key][idx][field] = el.innerText.trim();
-    }
-  });
-  saveExp();
-  expEditing = false;
-  applyExpEditState();
-  toast('Saved!');
-}
-function expCancel() {
-  expData = JSON.parse(JSON.stringify(expSnapshot));
-  expEditing = false;
-  renderExp();
-  toast('Cancelled');
-}
-
-// Delete entry
-document.addEventListener('click', e => {
-  if(!e.target.classList.contains('exp-del-btn')) return;
-  const key = e.target.dataset.key, idx = parseInt(e.target.dataset.idx);
-  if(expData[key].length <= 1) { toast('Need at least 1 entry'); return; }
-  expData[key].splice(idx, 1);
-  const _listMap = {internships:'exp-intern-list',campus:'exp-campus-list',exchange:'exp-exchange-list'};
-  renderExpSection(key, _listMap[key] || 'exp-intern-list');
-});
-
-// Add entry
-document.addEventListener('click', e => {
-  if(!e.target.classList.contains('exp-add-btn') && !e.target.closest('.exp-add-btn')) return;
-  const btn = e.target.closest('.exp-add-btn') || e.target;
-  const key = btn.dataset.key;
-  const _lm = {internships:'exp-intern-list',campus:'exp-campus-list',exchange:'exp-exchange-list'};
-  const listId = _lm[key] || 'exp-intern-list';
-  expData[key].push({ id: key[0]+Date.now(), role: 'Role / Position', org: 'Organisation', period: 'Year – Year', desc: 'Describe what you did, what you learned, and the impact you made.' });
-  renderExpSection(key, listId);
-  toast('Entry added');
-});
-
-document.getElementById('expEditToggle').addEventListener('click', () => {
-  if(!expEditing) expEnterEdit(); else expSave();
-});
-
-renderExp();
 
 /* ══════════════════════════════════
    INTERACTIONS
@@ -2231,384 +1105,47 @@ goScreen = function(id) {
   }
 };
 
-/* ══════════════════════════════════
-   SAVE / EXPORT
-══════════════════════════════════ */
-function buildPortfolioHTML() {
-  const KEYS = ['pf_about_v1', 'pf_v3', 'pf_exp_v1', 'pf_font_v1'];
-  const stored = {};
-  KEYS.forEach(k => { const v = localStorage.getItem(k); if(v !== null) stored[k] = v; });
-  const _b64 = btoa(unescape(encodeURIComponent(JSON.stringify(stored))));
-  const dataMeta = '<meta id="_pf_data" content="' + _b64 + '">';
-  let html = _HTML_TEMPLATE.replace(/^html\s*/i, '');
-  html = html.replace(/<meta id="_pf_data"[^>]*>/g, '');
-  html = html.replace(/(<div id="g-topbar")[^>]*>/g, '$1>');
-  html = html.replace(/<button id="fontBtn"[\s\S]*?<\/button>/g, '');
-  html = html.replace(/<div id="fontPanel"[\s\S]*?<\/div>/g, '');
-  html = html.replace(/(<div class="drum" id="drum">)[\s\S]*?(<\/div>)/, '$1$2');
-  html = html.replace(/(<div class="ep-list" id="epList">)[\s\S]*?(<\/div>)/, '$1$2');
-  html = html.replace(/(<div id="exp-intern-list">)[\s\S]*?(<\/div>)/, '$1$2');
-  html = html.replace(/(<div id="exp-campus-list">)[\s\S]*?(<\/div>)/, '$1$2');
-  html = html.replace(/(<div id="exp-exchange-list">)[\s\S]*?(<\/div>)/, '$1$2');
-  html = html.replace(/(<div class="pf-dots" id="dots">)[\s\S]*?(<\/div>)/, '$1$2');
-  html = html.replace(/(<meta charset="UTF-8">)/, '$1\n' + dataMeta);
-  return '<!DOCTYPE html>\n' + html;
+const fonts = {
+  dm: {family:"'DM Sans', sans-serif", weight:'200'},
+  outfit: {family:"'Outfit', sans-serif", weight:'200'},
+  syne: {family:"'Syne', sans-serif", weight:'300'},
+  jakarta: {family:"'Plus Jakarta Sans', sans-serif", weight:'200'},
+  instrument: {family:"'Instrument Sans', sans-serif", weight:'300'},
+  grotesk: {family:"'Space Grotesk', sans-serif", weight:'300'},
+  cormorant: {family:"'Cormorant Garamond', serif", weight:'300'},
+};
+
+async function loadPortfolio() {
+  const response = await fetch('./data.json', {cache:'no-cache'});
+  if(!response.ok) throw new Error('Portfolio data request failed: ' + response.status);
+  const data = await response.json();
+  abData = JSON.parse(data.pf_about_v1 || '{}');
+  projects = JSON.parse(data.pf_v3 || '[]');
+  expData = JSON.parse(data.pf_exp_v1 || '{}');
+
+  const fontId = data.pf_font_v1;
+  const font = Object.hasOwn(fonts, fontId) ? fonts[fontId] : fonts.dm;
+  const root = document.documentElement;
+  root.style.setProperty('--font-display', font.family);
+  root.style.setProperty('--font-body', font.family);
+  const landingWord = document.querySelector('.l-word');
+  landingWord.style.fontStyle = fontId === 'cormorant' ? 'italic' : 'normal';
+  landingWord.style.fontWeight = font.weight;
+  landingWord.style.letterSpacing = fontId === 'cormorant' ? '.05em' : '-.04em';
+
+  renderAbout();
+  renderExp();
 }
 
-function exportPortfolio() {
-  const html = buildPortfolioHTML();
-  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = 'portfolio.html';
-  document.body.appendChild(a); a.click();
-  document.body.removeChild(a); URL.revokeObjectURL(url);
-  toast('Saved as portfolio.html ↓');
-}
-
-// ── Auto-publish to GitHub Pages after every save ──
-const GH_REPO = 'cineaste17/portfolio';
-const GH_FILE = 'index.html';
-let _ghPublishing = false;
-
-async function publishToGitHub() {
-  if(_ghPublishing) return;
-  let token = localStorage.getItem('pf_gh_token');
-  if(!token) {
-    token = prompt('GitHub Personal Access Token\n(Settings → Developer settings → Personal access tokens → Tokens classic → repo scope):');
-    if(!token) return;
-    token = token.trim();
-    localStorage.setItem('pf_gh_token', token);
-    updateTokenResetBtn();
-  }
-  _ghPublishing = true;
-  toast('Publishing…');
-  try {
-    const base = `https://api.github.com/repos/${GH_REPO}`;
-    const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'X-GitHub-Api-Version': '2022-11-28' };
-
-    // Build data.json — only the user content, never touch index.html
-    const KEYS = ['pf_about_v1', 'pf_v3', 'pf_exp_v1', 'pf_font_v1'];
-    const stored = {};
-    KEYS.forEach(k => { const v = localStorage.getItem(k); if(v !== null) stored[k] = v; });
-    const dataJson = JSON.stringify(stored);
-    const bytes = new TextEncoder().encode(dataJson);
-    const chunks = [];
-    for(let i = 0; i < bytes.length; i += 8192)
-      chunks.push(String.fromCharCode.apply(null, bytes.subarray(i, i + 8192)));
-    const b64 = btoa(chunks.join(''));
-
-    // Get or create data.json sha (needed for update)
-    let existingSha = '';
-    try {
-      const chk = await fetch(`${base}/contents/data.json`, { headers });
-      if(chk.ok) { const j = await chk.json(); existingSha = j.sha; }
-    } catch(e) {}
-
-    // Push data.json via Contents API (it's small, no size limit issue)
-    const body = { message: 'portfolio: update content', content: b64 };
-    if(existingSha) body.sha = existingSha;
-    const putRes = await fetch(`${base}/contents/data.json`, {
-      method: 'PUT', headers, body: JSON.stringify(body)
-    });
-    if(!putRes.ok){ const t = await putRes.text(); throw new Error('put ' + putRes.status + ': ' + t.slice(0,120)); }
-
-    toast('Published ↑ live in ~1 min');
-  } catch(e) {
-    console.error(e);
-    if(String(e).includes('401') || String(e).includes('403')) {
-      localStorage.removeItem('pf_gh_token');
-      updateTokenResetBtn();
-      toast('Token invalid — save again to re-enter');
-    } else {
-      toast('Publish failed: ' + e.message);
-    }
-  } finally {
-    _ghPublishing = false;
-  }
-}
-
-function resetAllContent() {
-  if(!sessionStorage.getItem(PW_SESSION)){requirePassword(resetAllContent);return;}
-  if(!confirm('清空所有内容，恢复默认？')) return;
-  ['pf_about_v1','pf_v3','pf_exp_v1','pf_font_v1'].forEach(k => localStorage.removeItem(k));
-  location.reload();
-}
-
-function resetGhToken() {
-  localStorage.removeItem('pf_gh_token');
-  updateTokenResetBtn();
-  toast('GitHub token cleared — save to re-enter');
-}
-
-function updateTokenResetBtn() {
-  const has = !!localStorage.getItem('pf_gh_token');
-  const mb = document.getElementById('mobileTokenReset');
-  const db = document.getElementById('desktopTokenReset');
-  if(mb) mb.style.display = has ? 'block' : 'none';
-  if(db) db.style.display = has ? 'inline-block' : 'none';
-}
-
-// Hook all save actions to also publish
-const _origAbSave = abSave;
-abSave = async function() { await _origAbSave.apply(this, arguments); publishToGitHub(); };
-const _origExpSave = expSave;
-expSave = function() { _origExpSave.apply(this, arguments); publishToGitHub(); };
-// saveProjects already calls publishToGitHub internally
-
-document.getElementById('saveFileBtn').addEventListener('click', exportPortfolio);
-
-/* ══════════════════════════════════
-   MEDIA CROP MODAL
-══════════════════════════════════ */
-let cropPI=-1,cropMI=-1;
-const cropModal=document.getElementById('cropModal');
-const cropStageEl=document.getElementById('cropStage');
-const cropImgEl=document.getElementById('cropImg');
-const cropVidEl=document.getElementById('cropVid');
-const cropZoomEl=document.getElementById('cropZoom');
-// crop state: panX/panY are pixel offsets from center; cropZoom is scale
-let cropSt={panX:0,panY:0,cropZoom:1,natW:0,natH:0};
-
-function cropCover(){
-  const sw=cropStageEl.offsetWidth||660,sh=cropStageEl.offsetHeight||360;
-  if(!cropSt.natW||!cropSt.natH)return{sc:1,dw:sw,dh:sh};
-  const sc=Math.max(sw/cropSt.natW,sh/cropSt.natH)*cropSt.cropZoom;
-  return{sc,sw,sh,dw:cropSt.natW*sc,dh:cropSt.natH*sc};
-}
-function applyCropLayout(){
-  const{sw,sh,dw,dh}=cropCover();
-  // clamp pan
-  const maxX=Math.max(0,(dw-sw)/2), maxY=Math.max(0,(dh-sh)/2);
-  cropSt.panX=Math.max(-maxX,Math.min(maxX,cropSt.panX));
-  cropSt.panY=Math.max(-maxY,Math.min(maxY,cropSt.panY));
-  const tx=(sw-dw)/2+cropSt.panX, ty=(sh-dh)/2+cropSt.panY;
-  const m=cropImgEl.style.display!=='none'?cropImgEl:cropVidEl;
-  m.style.width=dw+'px'; m.style.height=dh+'px';
-  m.style.left=tx+'px'; m.style.top=ty+'px';
-}
-function cropComputeFocal(){
-  const{sw,sh,dw,dh}=cropCover();
-  // focalX = fraction of image width where center of view lies
-  const focalX=(dw/2-cropSt.panX)/dw*100;
-  const focalY=(dh/2-cropSt.panY)/dh*100;
-  return{focalX:Math.max(0,Math.min(100,focalX)),focalY:Math.max(0,Math.min(100,focalY))};
-}
-function cropRestoreFromFocal(fx,fy,zoom){
-  cropSt.cropZoom=zoom||1;
-  cropZoomEl.value=cropSt.cropZoom;
-  const{dw,dh}=cropCover();
-  cropSt.panX=dw/2-fx/100*dw;
-  cropSt.panY=dh/2-fy/100*dh;
-  applyCropLayout();
-}
-
-function openCropModal(pi,mi){
-  if(pi<0||mi<0)return;
-  const m=projects[pi]&&projects[pi].media[mi];if(!m)return;
-  cropPI=pi;cropMI=mi;
-  cropSt={panX:0,panY:0,cropZoom:m.cropZoom||1,natW:0,natH:0};
-  cropZoomEl.value=cropSt.cropZoom;
-  const isVid=m.type==='video';
-  cropImgEl.style.display=isVid?'none':'block';
-  cropVidEl.style.display=isVid?'block':'none';
-  if(isVid){
-    cropVidEl.src=m.src; cropVidEl.load(); cropVidEl.play().catch(()=>{});
-    cropVidEl.onloadedmetadata=()=>{
-      cropSt.natW=cropVidEl.videoWidth||640; cropSt.natH=cropVidEl.videoHeight||360;
-      cropRestoreFromFocal(m.focalX!==undefined?m.focalX:50, m.focalY!==undefined?m.focalY:50, cropSt.cropZoom);
-    };
-  } else {
-    cropImgEl.src=m.src;
-    cropImgEl.onload=()=>{
-      cropSt.natW=cropImgEl.naturalWidth; cropSt.natH=cropImgEl.naturalHeight;
-      cropRestoreFromFocal(m.focalX!==undefined?m.focalX:50, m.focalY!==undefined?m.focalY:50, cropSt.cropZoom);
-    };
-    if(cropImgEl.complete&&cropImgEl.naturalWidth){
-      cropSt.natW=cropImgEl.naturalWidth; cropSt.natH=cropImgEl.naturalHeight;
-      cropRestoreFromFocal(m.focalX!==undefined?m.focalX:50, m.focalY!==undefined?m.focalY:50, cropSt.cropZoom);
-    }
-  }
-  cropModal.style.display='flex';
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{
-    cropModal.classList.add('open');
-    requestAnimationFrame(()=>cropModal.classList.add('ready'));
-  }));
-}
-function closeCropModal(){
-  cropModal.classList.remove('ready');
-  setTimeout(()=>{
-    cropModal.classList.remove('open'); cropModal.style.display='none';
-    cropVidEl.pause(); cropVidEl.src='';
-  },300);
-}
-
-// drag
-let cDrag=false,cSX,cSY,cOX,cOY;
-cropStageEl.addEventListener('pointerdown',e=>{
-  e.preventDefault();
-  cropStageEl.setPointerCapture(e.pointerId);
-  cDrag=true; cSX=e.clientX; cSY=e.clientY; cOX=cropSt.panX; cOY=cropSt.panY;
-  cropStageEl.classList.add('dragging');
+const portfolioReady = loadPortfolio().then(() => true, error => {
+  console.error(error);
+  document.querySelector('.l-enter').textContent = 'Unable to load portfolio. Please refresh.';
+  return false;
 });
-cropStageEl.addEventListener('pointermove',e=>{
-  if(!cDrag)return;
-  cropSt.panX=cOX+(e.clientX-cSX); cropSt.panY=cOY+(e.clientY-cSY);
-  applyCropLayout();
+document.getElementById('s-landing').addEventListener('click', async () => {
+  if(await portfolioReady) goScreen('s-about');
 });
-cropStageEl.addEventListener('pointerup',()=>{cDrag=false;cropStageEl.classList.remove('dragging');});
-cropStageEl.addEventListener('pointercancel',()=>{cDrag=false;cropStageEl.classList.remove('dragging');});
-// touch pinch-to-zoom
-let pinchDist0=0,pinchZoom0=1;
-cropStageEl.addEventListener('touchstart',e=>{
-  if(e.touches.length===2){
-    pinchDist0=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-    pinchZoom0=cropSt.cropZoom;
-  }
-},{passive:true});
-cropStageEl.addEventListener('touchmove',e=>{
-  if(e.touches.length===2){
-    e.preventDefault();
-    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
-    cropSt.cropZoom=Math.max(1,Math.min(3,pinchZoom0*d/pinchDist0));
-    cropZoomEl.value=cropSt.cropZoom;
-    applyCropLayout();
-  }
-},{passive:false});
-// scroll to zoom
-cropStageEl.addEventListener('wheel',e=>{
-  e.preventDefault();
-  cropSt.cropZoom=Math.max(1,Math.min(3,cropSt.cropZoom*(e.deltaY>0?0.96:1.04)));
-  cropZoomEl.value=cropSt.cropZoom;
-  applyCropLayout();
-},{passive:false});
-// zoom slider
-cropZoomEl.addEventListener('input',()=>{
-  cropSt.cropZoom=parseFloat(cropZoomEl.value);
-  applyCropLayout();
-});
-// reset
-document.getElementById('cropReset').addEventListener('click',()=>{
-  cropSt.panX=0; cropSt.panY=0; cropSt.cropZoom=1;
-  cropZoomEl.value=1;
-  applyCropLayout();
-});
-// apply
-document.getElementById('cropDone').addEventListener('click',()=>{
-  if(cropPI<0||cropMI<0)return;
-  const m=projects[cropPI].media[cropMI];
-  if(m){
-    const{focalX,focalY}=cropComputeFocal();
-    m.focalX=parseFloat(focalX.toFixed(2));
-    m.focalY=parseFloat(focalY.toFixed(2));
-    m.cropZoom=parseFloat(cropSt.cropZoom.toFixed(3));
-  }
-  saveProjects();
-  closeCropModal();
-  renderMediaGrid();
-  if(currentScreen==='s-portfolio')rebuildAll();
-  toast('Crop applied');
-});
-// esc / backdrop
-document.addEventListener('keydown',e=>{
-  if(cropModal.classList.contains('open')&&e.key==='Escape')closeCropModal();
-});
-cropModal.addEventListener('click',e=>{if(e.target===cropModal)closeCropModal();});
-
-/* ══════════════════════════════════
-   PASSWORD GATE
-══════════════════════════════════ */
-const PW = '1234';
-const PW_SESSION = 'pf_unlocked';
-let _pwCallback = null;
-
-function requirePassword(cb) {
-  if(sessionStorage.getItem(PW_SESSION) === '1') { cb(); return; }
-  _pwCallback = cb;
-  openPwGate();
-}
-
-function openPwGate() {
-  const gate = document.getElementById('pwGate');
-  gate.classList.add('show');
-  requestAnimationFrame(() => gate.classList.add('ready'));
-  _pwInput = '';
-  renderPwDots();
-  document.getElementById('pwError').classList.remove('show');
-}
-
-function closePwGate() {
-  const gate = document.getElementById('pwGate');
-  gate.classList.remove('ready');
-  setTimeout(() => gate.classList.remove('show'), 350);
-  _pwInput = '';
-  renderPwDots();
-}
-
-let _pwInput = '';
-function renderPwDots() {
-  document.querySelectorAll('.pw-dot').forEach((d,i) => {
-    d.classList.toggle('filled', i < _pwInput.length);
-  });
-}
-
-function pwKey(k) {
-  if(_pwInput.length >= 4) return;
-  _pwInput += k;
-  renderPwDots();
-  if(_pwInput.length === 4) {
-    if(_pwInput === PW) {
-      sessionStorage.setItem(PW_SESSION, '1');
-      closePwGate();
-      if(_pwCallback) { const cb = _pwCallback; _pwCallback = null; cb(); }
-    } else {
-      document.getElementById('pwError').classList.add('show');
-      document.querySelectorAll('.pw-dot').forEach(d => { d.classList.add('shake'); setTimeout(()=>d.classList.remove('shake'),400); });
-      setTimeout(() => {
-        _pwInput = '';
-        renderPwDots();
-        document.getElementById('pwError').classList.remove('show');
-      }, 700);
-    }
-  }
-}
-
-document.addEventListener('keydown', e => {
-  const gate = document.getElementById('pwGate');
-  if(!gate.classList.contains('show')) return;
-  if(e.key >= '0' && e.key <= '9') pwKey(e.key);
-  if(e.key === 'Backspace') { _pwInput = _pwInput.slice(0,-1); renderPwDots(); document.getElementById('pwError').classList.remove('show'); }
-  if(e.key === 'Escape') closePwGate();
-});
-
-
 </script>
 
-<div id="pwGate">
-  <div class="pw-box">
-    <div class="pw-label">Edit Access</div>
-    <div class="pw-dots">
-      <div class="pw-dot"></div>
-      <div class="pw-dot"></div>
-      <div class="pw-dot"></div>
-      <div class="pw-dot"></div>
-    </div>
-    <div class="pw-error" id="pwError">Incorrect</div>
-    <div class="pw-keypad">
-      <button class="pw-key" onclick="pwKey('1')">1</button>
-      <button class="pw-key" onclick="pwKey('2')">2</button>
-      <button class="pw-key" onclick="pwKey('3')">3</button>
-      <button class="pw-key" onclick="pwKey('4')">4</button>
-      <button class="pw-key" onclick="pwKey('5')">5</button>
-      <button class="pw-key" onclick="pwKey('6')">6</button>
-      <button class="pw-key" onclick="pwKey('7')">7</button>
-      <button class="pw-key" onclick="pwKey('8')">8</button>
-      <button class="pw-key" onclick="pwKey('9')">9</button>
-      <button class="pw-key del" onclick="_pwInput=_pwInput.slice(0,-1);renderPwDots();document.getElementById('pwError').classList.remove('show')">⌫</button>
-      <button class="pw-key" onclick="pwKey('0')">0</button>
-      <button class="pw-key cls" onclick="closePwGate()">cancel</button>
-    </div>
-  </div>
-</div>
 </body>
 </html>
